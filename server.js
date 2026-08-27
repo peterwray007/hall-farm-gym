@@ -22,6 +22,7 @@ const CONFIG = {
   GUEST_PRICE: 4,         // per extra person (non-members)
   SESSION_CREDIT_COST: 10, // credits per session for members
   GROUP_BOOKING_CREDIT: 7.5, // credits per person in member group
+  GROUP_GUEST_PRICE: 4,   // guest fee same as non-members when booking with group
   DAYS_BOOKABLE: 10,      // how far ahead people can book
 };
 const SLOT_MIN = CONFIG.SESSION_MIN + CONFIG.TURNAROUND_MIN;
