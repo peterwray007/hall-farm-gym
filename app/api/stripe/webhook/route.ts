@@ -2,7 +2,7 @@ import {NextRequest,NextResponse} from "next/server";
 import Stripe from "stripe";
 import {adminClient} from "../../../../lib/supabase-server";
 export const runtime="nodejs";
-const stripe=new Stripe(process.env.STRIPE_SECRET_KEY||"");
+const getStripe=()=>new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 function membershipStatus(s:string){if(s==="active"||s==="trialing")return "active";if(s==="past_due"||s==="unpaid"||s==="incomplete")return "past_due";if(s==="paused")return "paused";return "cancelled"}
 
@@ -26,7 +26,7 @@ export async function POST(request:NextRequest){
  if(!process.env.STRIPE_SECRET_KEY||!secret)return NextResponse.json({error:"Stripe webhook is not configured."},{status:500});
  if(!sig)return NextResponse.json({error:"Missing Stripe signature."},{status:400});
  let event:Stripe.Event;
- try{event=stripe.webhooks.constructEvent(await request.text(),sig,secret)}catch(e){return NextResponse.json({error:e instanceof Error?e.message:"Invalid signature."},{status:400})}
+ try{event=getStripe().webhooks.constructEvent(await request.text(),sig,secret)}catch(e){return NextResponse.json({error:e instanceof Error?e.message:"Invalid signature."},{status:400})}
  const db=adminClient();
  const {data:claimed,error:claimError}=await db.rpc("claim_stripe_event",{p_event_id:event.id,p_event_type:event.type});if(claimError)throw claimError;if(!claimed)return NextResponse.json({received:true,duplicate:true});
  try{
@@ -36,14 +36,14 @@ export async function POST(request:NextRequest){
     const pi=typeof s.payment_intent==="string"?s.payment_intent:s.payment_intent?.id||null;
     const {error}=await db.rpc("confirm_payg_booking",{p_session_id:s.id,p_payment_intent:pi});if(error)throw error;
    }
-   if(s.metadata?.kind==="membership"&&s.subscription){const sub=await stripe.subscriptions.retrieve(typeof s.subscription==="string"?s.subscription:s.subscription.id);await syncSubscription(sub,false)}
+   if(s.metadata?.kind==="membership"&&s.subscription){const sub=await getStripe().subscriptions.retrieve(typeof s.subscription==="string"?s.subscription:s.subscription.id);await syncSubscription(sub,false)}
   }else if(event.type==="customer.subscription.created"||event.type==="customer.subscription.updated"){
    await syncSubscription(event.data.object as any,false);
   }else if(event.type==="customer.subscription.deleted"){
    await syncSubscription(event.data.object as any,false);
   }else if(event.type==="invoice.paid"){
    const inv=event.data.object as any; const sid=typeof inv.subscription==="string"?inv.subscription:inv.subscription?.id;
-   if(sid){const sub=await stripe.subscriptions.retrieve(sid);await syncSubscription(sub,false);const {error}=await db.rpc("credit_paid_invoice",{p_subscription_id:sid,p_invoice_id:inv.id});if(error)throw error}
+   if(sid){const sub=await getStripe().subscriptions.retrieve(sid);await syncSubscription(sub,false);const {error}=await db.rpc("credit_paid_invoice",{p_subscription_id:sid,p_invoice_id:inv.id});if(error)throw error}
   }else if(event.type==="invoice.payment_failed"){
    const inv=event.data.object as any; const sid=typeof inv.subscription==="string"?inv.subscription:inv.subscription?.id;
    if(sid)await db.from("memberships").update({status:"past_due"}).eq("stripe_subscription_id",sid);
