@@ -2,7 +2,7 @@ import {NextRequest,NextResponse} from "next/server";
 import Stripe from "stripe";
 import {adminClient,userClient} from "../../../../lib/supabase-server";
 export const runtime="nodejs";
-const stripe=new Stripe(process.env.STRIPE_SECRET_KEY||"");
+const stripe=()=>new Stripe(process.env.STRIPE_SECRET_KEY!);
 const SITE=process.env.NEXT_PUBLIC_SITE_URL||"https://hall-farm-gym-9ghc.vercel.app";
 const PAYG_PRICE=process.env.STRIPE_PRICE_PAYG||"price_1UL6WH6ge2ZP5Q4oQvLyMoJE";
 
@@ -19,7 +19,7 @@ export async function POST(req:NextRequest){
     const code=String(body.plan||"").toLowerCase();
     const {data:plan,error}=await db.from("membership_plans").select("code,stripe_price_id").eq("code",code).eq("active",true).single();
     if(error||!plan?.stripe_price_id) return NextResponse.json({error:"Membership plan unavailable."},{status:400});
-    const session=await stripe.checkout.sessions.create({
+    const session=await stripe().checkout.sessions.create({
       mode:"subscription",customer_email:user.email,line_items:[{price:plan.stripe_price_id,quantity:1}],
       success_url:`${SITE}/account?checkout=success`,cancel_url:`${SITE}/join?plan=${code}&checkout=cancelled`,
       client_reference_id:user.id,metadata:{kind:"membership",user_id:user.id,plan_code:code},
@@ -32,7 +32,7 @@ export async function POST(req:NextRequest){
     const {data:holdId,error:he}=await db.rpc("create_payg_hold",{p_user_id:user.id,p_starts_at:startsAt,p_party_size:partySize});
     if(he) return NextResponse.json({error:he.message},{status:409});
     try{
-      const session=await stripe.checkout.sessions.create({
+      const session=await stripe().checkout.sessions.create({
        mode:"payment",customer_email:user.email,line_items:[{price:PAYG_PRICE,quantity:1}],
        success_url:`${SITE}/account?payg=success`,cancel_url:`${SITE}/book?payg=cancelled`,
        client_reference_id:user.id,metadata:{kind:"payg",user_id:user.id,hold_id:holdId}
