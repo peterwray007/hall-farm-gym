@@ -1,0 +1,6 @@
+"use client";
+import {useEffect,useState} from "react";import {supabase} from "../../lib/supabase";
+export default function Join(){const[plan,setPlan]=useState("solo"),[email,setEmail]=useState(""),[msg,setMsg]=useState("");
+useEffect(()=>{setPlan(new URLSearchParams(location.search).get("plan")||"solo")},[]);
+async function start(){const{data:{user}}=await supabase().auth.getUser();if(!user){if(!email){setMsg("Enter your email first.");return}const{error}=await supabase().auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+`/join?plan=${plan}`}});setMsg(error?.message||"Check your email for your secure sign-in link, then return here to continue.");return}setMsg("Membership checkout is being activated before launch. No payment has been taken.");}
+return <main><section className="hero"><p className="eyebrow">JOIN THE HALL FARM GYM</p><h2>{plan.toUpperCase()} membership</h2><p>Memberships include private whole-gym booking credits. Duo and Trio allowances are shared by the named members and cannot turn into extra solo visits.</p><input type="email" placeholder="Email address" value={email} onChange={e=>setEmail(e.target.value)}/><button className="primary" onClick={start}>Continue securely</button>{msg&&<p>{msg}</p>}<p><a href="/">← Back to memberships</a></p></section></main>}
