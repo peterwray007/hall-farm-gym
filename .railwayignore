@@ -1,7 +1,0 @@
-node_modules/
-gym.db
-gym.db-wal
-gym.db-shm
-.env
-*.log
-.DS_Store
