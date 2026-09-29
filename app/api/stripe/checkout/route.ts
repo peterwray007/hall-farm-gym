@@ -3,7 +3,7 @@ import Stripe from "stripe";
 import {adminClient,userClient} from "../../../../lib/supabase-server";
 export const runtime="nodejs";
 const stripe=()=>new Stripe(process.env.STRIPE_SECRET_KEY!);
-const SITE=process.env.NEXT_PUBLIC_SITE_URL||"https://hall-farm-gym-9ghc.vercel.app";
+const SITE=process.env.NEXT_PUBLIC_SITE_URL||"https://hall-farm-gym.vercel.app";
 const PAYG_PRICE=process.env.STRIPE_PRICE_PAYG||"price_1UL6WH6ge2ZP5Q4oQvLyMoJE";
 
 export async function POST(req:NextRequest){
