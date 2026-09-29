@@ -15,6 +15,7 @@ export async function POST(req:NextRequest){
   if(ue||!user) return NextResponse.json({error:"Please sign in again."},{status:401});
   const body=await req.json(); const db=adminClient();
   if(body.type==="membership"){
+    const {data:existing}=await db.from("memberships").select("id,status").eq("owner_id",user.id).in("status",["active","past_due","paused"]).limit(1).maybeSingle();if(existing)return NextResponse.json({error:"You already have a membership. Manage it from My Account."},{status:409});
     const code=String(body.plan||"").toLowerCase();
     const {data:plan,error}=await db.from("membership_plans").select("code,stripe_price_id").eq("code",code).eq("active",true).single();
     if(error||!plan?.stripe_price_id) return NextResponse.json({error:"Membership plan unavailable."},{status:400});
