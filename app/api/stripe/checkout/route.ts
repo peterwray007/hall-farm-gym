@@ -4,7 +4,8 @@ import {adminClient,userClient} from "../../../../lib/supabase-server";
 export const runtime="nodejs";
 const stripe=()=>new Stripe(process.env.STRIPE_SECRET_KEY!);
 const SITE=process.env.NEXT_PUBLIC_SITE_URL||"https://www.hallfarmgym.com";
-const PAYG_PRICE=process.env.STRIPE_PRICE_PAYG||"price_1UL6WH6ge2ZP5Q4oQvLyMoJE";\nconst GUEST_PRICE=process.env.STRIPE_PRICE_MEMBER_GUEST||"price_1ULU1N6ge2ZP5Q4o5eHFqj49";
+const PAYG_PRICE=process.env.STRIPE_PRICE_PAYG||"price_1UL6WH6ge2ZP5Q4oQvLyMoJE";
+const GUEST_PRICE=process.env.STRIPE_PRICE_MEMBER_GUEST||"price_1ULU1N6ge2ZP5Q4o5eHFqj49";
 
 export async function POST(req:NextRequest){
  try{
@@ -27,7 +28,14 @@ export async function POST(req:NextRequest){
     });
     return NextResponse.json({url:session.url});
   }
-  if(body.type==="member_guest"){\n    const startsAt=String(body.startsAt||""); const partySize=Math.max(2,Math.min(5,Number(body.partySize)||2));\n    const {data:holdId,error:he}=await db.rpc("create_member_guest_hold",{p_user_id:user.id,p_starts_at:startsAt,p_party_size:partySize});\n    if(he)return NextResponse.json({error:he.message},{status:409});\n    try{const session=await stripe().checkout.sessions.create({mode:"payment",customer_email:user.email,line_items:[{price:GUEST_PRICE,quantity:1}],success_url:`${SITE}/account?guest=success`,cancel_url:`${SITE}/book?guest=cancelled`,client_reference_id:user.id,metadata:{kind:"member_guest",user_id:user.id,hold_id:holdId}});await db.rpc("attach_member_guest_checkout",{p_hold_id:holdId,p_session_id:session.id});return NextResponse.json({url:session.url});}\n    catch(e){await db.from("member_guest_holds").delete().eq("id",holdId);throw e;}\n  }\n  if(body.type==="payg"){
+  if(body.type==="member_guest"){
+    const startsAt=String(body.startsAt||""); const partySize=Math.max(2,Math.min(5,Number(body.partySize)||2));
+    const {data:holdId,error:he}=await db.rpc("create_member_guest_hold",{p_user_id:user.id,p_starts_at:startsAt,p_party_size:partySize});
+    if(he)return NextResponse.json({error:he.message},{status:409});
+    try{const session=await stripe().checkout.sessions.create({mode:"payment",customer_email:user.email,line_items:[{price:GUEST_PRICE,quantity:1}],success_url:`${SITE}/account?guest=success`,cancel_url:`${SITE}/book?guest=cancelled`,client_reference_id:user.id,metadata:{kind:"member_guest",user_id:user.id,hold_id:holdId}});await db.rpc("attach_member_guest_checkout",{p_hold_id:holdId,p_session_id:session.id});return NextResponse.json({url:session.url});}
+    catch(e){await db.from("member_guest_holds").delete().eq("id",holdId);throw e;}
+  }
+  if(body.type==="payg"){
     const startsAt=String(body.startsAt||""); const partySize=Math.max(1,Math.min(5,Number(body.partySize)||1));
     const {data:holdId,error:he}=await db.rpc("create_payg_hold",{p_user_id:user.id,p_starts_at:startsAt,p_party_size:partySize});
     if(he) return NextResponse.json({error:he.message},{status:409});
