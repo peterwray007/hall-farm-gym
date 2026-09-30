@@ -53,7 +53,7 @@ export async function POST(request:NextRequest){
    const inv=event.data.object as any; const sid=invoiceSubscriptionId(inv);
    if(sid){const sub=await getStripe().subscriptions.retrieve(sid);await syncSubscription(sub,false);const {error}=await db.rpc("credit_paid_invoice",{p_subscription_id:sid,p_invoice_id:inv.id});if(error)throw error}
   }else if(event.type==="invoice.payment_failed"){
-   const inv=event.data.object as any; const sid=typeof inv.subscription==="string"?inv.subscription:inv.subscription?.id;
+   const inv=event.data.object as any; const sid=invoiceSubscriptionId(inv);
    if(sid)await db.from("memberships").update({status:"past_due"}).eq("stripe_subscription_id",sid);
   }
   await db.rpc("finish_stripe_event",{p_event_id:event.id,p_success:true,p_error:null});return NextResponse.json({received:true});
