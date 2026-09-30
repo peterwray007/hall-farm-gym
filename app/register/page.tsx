@@ -1,0 +1,1 @@
+"use client";export default function Register(){return <main><section className="hero"><h2>Create your account</h2></section></main>}
