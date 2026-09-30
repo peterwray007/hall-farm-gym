@@ -1,6 +1,7 @@
 import {NextRequest,NextResponse} from "next/server";
 import Stripe from "stripe";
 import {adminClient} from "../../../../lib/supabase-server";
+import {bookingEmail,sendEmail} from "../../../../lib/email";
 export const runtime="nodejs";
 const getStripe=()=>new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -39,10 +40,10 @@ export async function POST(request:NextRequest){
  try{
   if(event.type==="checkout.session.completed"||event.type==="checkout.session.async_payment_succeeded"){
    const s=event.data.object as any;
-   if(s.metadata?.kind==="member_guest"&&s.payment_status==="paid"){const pi=objectId(s.payment_intent);const {error}=await db.rpc("confirm_member_guest_payment",{p_hold_id:s.metadata.hold_id,p_session_id:s.id,p_payment_intent:pi});if(error)throw error}
+   if(s.metadata?.kind==="member_guest"&&s.payment_status==="paid"){const pi=objectId(s.payment_intent);const {data:bid,error}=await db.rpc("confirm_member_guest_payment",{p_hold_id:s.metadata.hold_id,p_session_id:s.id,p_payment_intent:pi});if(error)throw error;const{data:b}=await db.from("bookings").select("starts_at,party_size,user_id").eq("id",bid).single();if(b){const{data:u}=await db.auth.admin.getUserById(b.user_id);if(u.user?.email)await sendEmail(u.user.email,"Hall Farm Gym booking confirmed",bookingEmail("member_guest",b.starts_at,b.party_size))}}
    if(s.metadata?.kind==="payg"&&s.payment_status==="paid"){
     const pi=typeof s.payment_intent==="string"?s.payment_intent:s.payment_intent?.id||null;
-    const {error}=await db.rpc("confirm_payg_booking",{p_session_id:s.id,p_payment_intent:pi});if(error)throw error;
+    const {data:bid,error}=await db.rpc("confirm_payg_booking",{p_session_id:s.id,p_payment_intent:pi});if(error)throw error;const{data:b}=await db.from("bookings").select("starts_at,party_size,user_id").eq("id",bid).single();if(b){const{data:u}=await db.auth.admin.getUserById(b.user_id);if(u.user?.email)await sendEmail(u.user.email,"Hall Farm Gym booking confirmed",bookingEmail("payg",b.starts_at,b.party_size))}
    }
    if(s.metadata?.kind==="membership"&&s.subscription){const sub=await getStripe().subscriptions.retrieve(typeof s.subscription==="string"?s.subscription:s.subscription.id);await syncSubscription(sub,false)}
   }else if(event.type==="customer.subscription.created"||event.type==="customer.subscription.updated"){
