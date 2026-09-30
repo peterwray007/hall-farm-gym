@@ -1,0 +1,1 @@
+import{NextResponse}from"next/server";export const runtime="nodejs";export async function GET(){return NextResponse.json({resend:!!process.env.RESEND_API_KEY,stripe:!!process.env.STRIPE_SECRET_KEY,stripeWebhook:!!process.env.STRIPE_WEBHOOK_SECRET,serviceRole:!!process.env.SUPABASE_SERVICE_ROLE_KEY,siteUrl:!!process.env.NEXT_PUBLIC_SITE_URL})}
