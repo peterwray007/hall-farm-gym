@@ -10,14 +10,22 @@ async function syncSubscription(sub:any,resetCredits=false){
  const db=adminClient(); const userId=sub.metadata?.user_id, code=sub.metadata?.plan_code;
  if(!userId||!code)return;
  const {data:plan}=await db.from("membership_plans").select("*").eq("code",code).single(); if(!plan)return;
+ const firstItem=sub.items?.data?.[0];const periodStart=firstItem?.current_period_start??sub.current_period_start;const periodEnd=firstItem?.current_period_end??sub.current_period_end;
  const values:any={plan_id:plan.id,owner_id:userId,stripe_customer_id:typeof sub.customer==="string"?sub.customer:sub.customer?.id,
  stripe_subscription_id:sub.id,status:membershipStatus(sub.status),
- period_start:sub.current_period_start?new Date(sub.current_period_start*1000).toISOString():null,
- period_end:sub.current_period_end?new Date(sub.current_period_end*1000).toISOString():null};
+ period_start:periodStart?new Date(periodStart*1000).toISOString():null,
+ period_end:periodEnd?new Date(periodEnd*1000).toISOString():null};
  const {data:existing}=await db.from("memberships").select("id").eq("stripe_subscription_id",sub.id).maybeSingle();
  let membershipId=existing?.id;
  if(existing){if(resetCredits){values.bookings_remaining=plan.monthly_bookings;values.guest_passes_remaining=plan.guest_passes}await db.from("memberships").update(values).eq("id",existing.id)}
  else{values.bookings_remaining=plan.monthly_bookings;values.guest_passes_remaining=plan.guest_passes;const {data:m,error}=await db.from("memberships").insert(values).select("id").single();if(error)throw error;membershipId=m.id}
+}
+
+function objectId(v:any){return typeof v==="string"?v:v?.id||null}
+function invoiceSubscriptionId(inv:any){
+ return objectId(inv.subscription)
+  ||objectId(inv.parent?.subscription_details?.subscription)
+  ||objectId(inv.lines?.data?.find((x:any)=>x.parent?.subscription_item_details?.subscription)?.parent?.subscription_item_details?.subscription);
 }
 
 export async function POST(request:NextRequest){
@@ -42,7 +50,7 @@ export async function POST(request:NextRequest){
   }else if(event.type==="customer.subscription.deleted"){
    await syncSubscription(event.data.object as any,false);
   }else if(event.type==="invoice.paid"){
-   const inv=event.data.object as any; const sid=typeof inv.subscription==="string"?inv.subscription:inv.subscription?.id;
+   const inv=event.data.object as any; const sid=invoiceSubscriptionId(inv);
    if(sid){const sub=await getStripe().subscriptions.retrieve(sid);await syncSubscription(sub,false);const {error}=await db.rpc("credit_paid_invoice",{p_subscription_id:sid,p_invoice_id:inv.id});if(error)throw error}
   }else if(event.type==="invoice.payment_failed"){
    const inv=event.data.object as any; const sid=typeof inv.subscription==="string"?inv.subscription:inv.subscription?.id;
