@@ -1,1 +1,3 @@
-import "./globals.css";export const metadata={title:"The Hall Farm Gym",description:"Your gym. Your time."};export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en"><body>{children}</body></html>}
+import "./globals.css";
+export const metadata={metadataBase:new URL("https://www.hallfarmgym.com"),title:{default:"The Hall Farm Gym | Private Gym Hire at Hall Farm",template:"%s | The Hall Farm Gym"},description:"Private gym hire at Hall Farm. Book the whole gym for a 50-minute session for up to five people, with PAYG, memberships and WrayFitness personal training.",alternates:{canonical:"/"},openGraph:{title:"The Hall Farm Gym",description:"Book the whole gym for yourself at Hall Farm.",url:"https://www.hallfarmgym.com",siteName:"The Hall Farm Gym",type:"website"}};
+export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en-GB"><body>{children}</body></html>}
