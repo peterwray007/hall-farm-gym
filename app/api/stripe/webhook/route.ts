@@ -39,7 +39,7 @@ export async function POST(request:NextRequest){
  try{
   if(event.type==="checkout.session.completed"||event.type==="checkout.session.async_payment_succeeded"){
    const s=event.data.object as any;
-   if(s.metadata?.kind==="member_guest"&&s.payment_status==="paid"){const {error}=await db.rpc("confirm_member_guest_payment",{p_hold_id:s.metadata.hold_id,p_session_id:s.id});if(error)throw error}
+   if(s.metadata?.kind==="member_guest"&&s.payment_status==="paid"){const pi=objectId(s.payment_intent);const {error}=await db.rpc("confirm_member_guest_payment",{p_hold_id:s.metadata.hold_id,p_session_id:s.id,p_payment_intent:pi});if(error)throw error}
    if(s.metadata?.kind==="payg"&&s.payment_status==="paid"){
     const pi=typeof s.payment_intent==="string"?s.payment_intent:s.payment_intent?.id||null;
     const {error}=await db.rpc("confirm_payg_booking",{p_session_id:s.id,p_payment_intent:pi});if(error)throw error;
