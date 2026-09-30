@@ -1,6 +1,7 @@
 import {NextRequest,NextResponse} from "next/server";
 import Stripe from "stripe";
 import {adminClient,userClient} from "../../../../lib/supabase-server";
+import {cancellationEmail,sendEmail} from "../../../../lib/email";
 export const runtime="nodejs";
 const stripe=()=>new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -26,7 +27,7 @@ export async function POST(req:NextRequest){
    }
    const{error}=await uc.rpc("cancel_my_booking",{p_booking_id:id});
    if(error)return NextResponse.json({error:error.message},{status:400});
-   return NextResponse.json({message:refundable?(b.guest_fee_paid?"Cancelled — your member session has been returned and the £5 guest fee has been refunded.":"Cancelled — your member session has been returned to your allowance."):"Cancelled — this was inside the cancellation window, so the member session and any guest fee are not returned."});
+   const message=refundable?(b.guest_fee_paid?"Cancelled — your member session has been returned and the £5 guest fee has been refunded.":"Cancelled — your member session has been returned to your allowance."):"Cancelled — this was inside the cancellation window, so the member session and any guest fee are not returned.";if(user.email){try{await sendEmail(user.email,"Hall Farm Gym booking cancelled",cancellationEmail(b.starts_at,message))}catch(e){console.error("cancellation email",e)}}return NextResponse.json({message});
   }
   if(b.kind!=="payg")return NextResponse.json({error:"This booking cannot be cancelled here."},{status:400});
   if(refundable&&!b.stripe_payment_intent_id)return NextResponse.json({error:"We could not find the PAYG payment for this booking. Please contact WrayFitness before cancelling."},{status:409});
@@ -36,6 +37,6 @@ export async function POST(req:NextRequest){
   }
   const{error:ce}=await db.from("bookings").update({status:"cancelled",cancelled_at:new Date().toISOString()}).eq("id",b.id).eq("status","confirmed");
   if(ce)throw ce;
-  return NextResponse.json({message:refundable?"Cancelled — your PAYG payment has been refunded.":"Cancelled — this was inside the cancellation window, so no refund is due."});
+  const message=refundable?"Cancelled — your PAYG payment has been refunded.":"Cancelled — this was inside the cancellation window, so no refund is due.";if(user.email){try{await sendEmail(user.email,"Hall Farm Gym booking cancelled",cancellationEmail(b.starts_at,message))}catch(e){console.error("cancellation email",e)}}return NextResponse.json({message});
  }catch(e){return NextResponse.json({error:e instanceof Error?e.message:"Could not cancel booking."},{status:500})}
 }
