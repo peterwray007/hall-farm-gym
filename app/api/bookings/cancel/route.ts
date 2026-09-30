@@ -24,6 +24,7 @@ export async function POST(req:NextRequest){
   const{data:s}=await db.from("gym_settings").select("cancellation_hours").single();
   const cutoff=(s?.cancellation_hours??12)*3600000;
   const refundable=new Date(b.starts_at).getTime()>=Date.now()+cutoff;
+  if(refundable&&!b.stripe_payment_intent_id)return NextResponse.json({error:"We could not find the PAYG payment for this booking. Please contact WrayFitness before cancelling."},{status:409});
   if(refundable&&b.stripe_payment_intent_id){
    if(!process.env.STRIPE_SECRET_KEY)throw new Error("Stripe is not configured");
    await stripe().refunds.create({payment_intent:b.stripe_payment_intent_id,metadata:{booking_id:b.id,reason:"customer_cancelled_outside_window"}},{idempotencyKey:`booking-refund-${b.id}`});
