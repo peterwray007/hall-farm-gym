@@ -6,3 +6,6 @@ Architecture: Next.js + Supabase Auth/Postgres/RLS + Stripe Checkout/Billing/Web
 
 
 Deployment trigger: production hosting connected 2026-09-29.
+
+
+<!-- Production deployment -->
