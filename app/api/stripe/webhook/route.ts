@@ -18,7 +18,6 @@ async function syncSubscription(sub:any,resetCredits=false){
  let membershipId=existing?.id;
  if(existing){if(resetCredits){values.bookings_remaining=plan.monthly_bookings;values.guest_passes_remaining=plan.guest_passes}await db.from("memberships").update(values).eq("id",existing.id)}
  else{values.bookings_remaining=plan.monthly_bookings;values.guest_passes_remaining=plan.guest_passes;const {data:m,error}=await db.from("memberships").insert(values).select("id").single();if(error)throw error;membershipId=m.id}
- if(membershipId)await db.from("membership_members").upsert({membership_id:membershipId,user_id:userId});
 }
 
 export async function POST(request:NextRequest){
