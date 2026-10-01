@@ -1,2 +1,2 @@
 import type {MetadataRoute} from "next";
-export default function sitemap():MetadataRoute.Sitemap{const b="https://www.hallfarmgym.com";return["","/book","/join","/holiday-lets"].map((p,i)=>({url:b+p,lastModified:new Date(),changeFrequency:i===0?"weekly":"monthly",priority:i===0?1:.8}))}
+export default function sitemap():MetadataRoute.Sitemap{const b="https://www.hallfarmgym.com";return["","/book","/join","/holiday-lets","/contact","/privacy-policy","/terms-of-service"].map((p,i)=>({url:b+p,lastModified:new Date(),changeFrequency:i===0?"weekly":"monthly",priority:i===0?1:.8}))}
