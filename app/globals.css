@@ -147,3 +147,11 @@ label.check input[type="checkbox"]{box-sizing:border-box;display:block;flex:0 0 
 @media(min-width:1200px){
  .desktop-hero-logo{display:block;position:absolute;left:calc(100% + 32px);top:160px;width:clamp(160px,16vw,225px);height:auto;max-width:calc(100vw - 100% - 80px);object-fit:contain;pointer-events:none}
 }
+
+/* On smaller laptops and tablets, centre the logo above the navigation instead of overlapping it. */
+@media(min-width:701px) and (max-width:1149px){
+ .siteheader-inner{height:auto;min-height:108px;display:flex;flex-direction:column;justify-content:center;gap:0;padding-top:5px;padding-bottom:10px}
+ .siteheader-inner>.brand{height:65px}
+ .siteheader-inner>.brand img{max-height:61px}
+ .siteheader-inner>nav{justify-content:center;gap:25px;margin:0}
+}
