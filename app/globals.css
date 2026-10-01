@@ -186,3 +186,13 @@ label.check input[type="checkbox"]{box-sizing:border-box;display:block;flex:0 0 
 .admin-advanced>div{padding-top:15px}
 @media(max-width:1000px){.admin-bulk-times{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:550px){.admin-bulk-times{grid-template-columns:repeat(3,minmax(0,1fr))}.admin-day{flex-basis:105px}.admin-bulk-confirm button{flex:1 1 110px}.admin-bulk-confirm strong{flex-basis:100%}}
+
+/* Public calendar: bootcamps are shared classes, visually distinct from private bookings. */
+.timecard.bootcamp-timecard{background:#263d2e;border:2px solid #90b193;opacity:1}
+.bootcamp-timecard .timestatus>span{color:#cce1c9;font-weight:800}
+.gym-class-slot{border-top:1px solid #5b8064;padding-top:13px;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.gym-class-slot strong{font:400 23px Georgia,serif;color:#f1f5e9}
+.gym-class-slot p{margin:1px 0 10px;font-size:13px;line-height:1.55;color:#d9e5d6}
+.gym-class-slot .eyebrow{font-size:11px;color:#b6d3b5}
+.gym-class-slot>a{font-size:13px;padding:11px 15px}
+.bootcamp-listing{scroll-margin-top:25px}
