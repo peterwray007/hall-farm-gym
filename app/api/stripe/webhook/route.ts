@@ -45,12 +45,12 @@ export async function POST(request:NextRequest){
     const pi=objectId(s.payment_intent);
     const {data:id,error}=await db.rpc("confirm_bootcamp_payg",{p_session_id:s.id,p_intent:pi});
     if(error)throw error;
-    const {data:b}=await db.from("bootcamp_bookings").select("class_id,contact_email,needs_review").eq("id",id).single();
+    const {data:b}=await db.from("bootcamp_bookings").select("class_id,contact_email,needs_review,access_token").eq("id",id).single();
     if(b){
      const {data:c}=await db.from("bootcamp_classes").select("title,starts_at").eq("id",b.class_id).single();
      if(c&&b.contact_email){
       const when=new Date(c.starts_at).toLocaleString("en-GB",{dateStyle:"full",timeStyle:"short",timeZone:"Europe/London"});
-      try{await sendEmail(b.contact_email,"Hall Farm Gym bootcamp booking confirmed",'<div style="font-family:Arial,sans-serif"><h2>You\'re booked in!</h2><p>'+c.title+' · '+when+'</p><p>£12.50 · one bootcamp place.</p>'+(b.needs_review?'<p>Your PAR-Q needs a review before you can attend. WrayFitness will be in touch.</p>':'<p>Your place is confirmed. See you there!</p>')+'<p>To cancel, contact WrayFitness.</p></div>')}catch(e){console.error("Bootcamp email",e)}
+      try{await sendEmail(b.contact_email,"Hall Farm Gym bootcamp booking confirmed",'<div style="font-family:Arial,sans-serif"><h2>You\'re booked in!</h2><p>'+c.title+' · '+when+'</p><p>£12.50 · one bootcamp place.</p>'+(b.needs_review?'<p>Your PAR-Q needs a review before you can attend. WrayFitness will be in touch.</p>':'<p>Your place is confirmed. See you there!</p>')+'<p><a href="'+(process.env.NEXT_PUBLIC_SITE_URL||"https://www.hallfarmgym.com")+'/bootcamps/manage?token='+b.access_token+'">View or cancel your place</a>. Keep this private link safe.</p></div>')}catch(e){console.error("Bootcamp email",e)}
       if(b.needs_review)try{await sendEmail("wrayfitness04@gmail.com","Bootcamp PAR-Q needs review",'<p>A bootcamp customer needs a health review for '+c.title+' on '+when+'. Sign in to your Supabase bootcamp bookings to inspect the submission.</p>')}catch(e){console.error("Bootcamp health email",e)}
      }
     }
