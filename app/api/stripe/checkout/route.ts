@@ -20,12 +20,18 @@ export async function POST(req:NextRequest){
     const code=String(body.plan||"").toLowerCase();
     const {data:plan,error}=await db.from("membership_plans").select("code,stripe_price_id").eq("code",code).eq("active",true).single();
     if(error||!plan?.stripe_price_id) return NextResponse.json({error:"Membership plan unavailable."},{status:400});
-    const session=await stripe().checkout.sessions.create({
+    const {data:capacityHold,error:capacityError}=await db.rpc("claim_membership_checkout",{p_user_id:user.id});
+    if(capacityError||!capacityHold)return NextResponse.json({error:capacityError?.message||"No memberships currently available. Please contact WrayFitness."},{status:409});
+    let session:Stripe.Checkout.Session;
+    try{session=await stripe().checkout.sessions.create({
       mode:"subscription",customer_email:user.email,line_items:[{price:plan.stripe_price_id,quantity:1}],
       success_url:`${SITE}/account?checkout=success`,cancel_url:`${SITE}/join?plan=${code}&checkout=cancelled`,
-      client_reference_id:user.id,metadata:{kind:"membership",user_id:user.id,plan_code:code},
+      client_reference_id:user.id,expires_at:Math.floor(Date.now()/1000)+30*60,metadata:{kind:"membership",user_id:user.id,plan_code:code,capacity_hold_id:capacityHold},
       subscription_data:{metadata:{user_id:user.id,plan_code:code}}
     });
+    const {error:attach}=await db.from("membership_checkout_holds").update({stripe_checkout_session_id:session.id}).eq("id",capacityHold);
+    if(attach)throw attach;
+    }catch(e){await db.from("membership_checkout_holds").delete().eq("id",capacityHold);throw e}
     return NextResponse.json({url:session.url});
   }
   if(body.type==="member_guest"){
