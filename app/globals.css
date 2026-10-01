@@ -155,3 +155,34 @@ label.check input[type="checkbox"]{box-sizing:border-box;display:block;flex:0 0 
  .siteheader-inner>.brand img{max-height:61px}
  .siteheader-inner>nav{justify-content:center;gap:25px;margin:0}
 }
+
+/* Admin one-tap bulk calendar. Only one day's sessions are rendered at a time. */
+.admin-bulk{max-width:100%;margin:18px 0 32px}
+.admin-bulk h3{font:400 clamp(27px,4vw,36px) Georgia,serif;margin:12px 0}
+.admin-bulk-type{display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin:22px 0}
+.admin-bulk-type label{display:flex;flex-direction:column;gap:8px;font-size:13px;color:#d3ded3;flex:1 1 200px}
+.admin-bulk-type input,.admin-bulk-type select{width:100%;margin:0}
+.admin-bulk-days{display:flex;gap:8px;overflow-x:auto;padding:6px 2px 13px;scrollbar-width:thin;scroll-snap-type:x proximity}
+.admin-day{display:flex;flex:0 0 125px;flex-direction:column;align-items:center;gap:5px;padding:13px 9px;color:#e4eee1;background:#19271e;border:1px solid #576c5a;border-radius:9px;scroll-snap-align:start}
+.admin-day strong{font-size:13px}
+.admin-day small{color:#bfcebf}
+.admin-day.active{background:#9cb79b;border-color:#b2d0ad;color:#142017}
+.admin-day.active small{color:#273b2b}
+.admin-bulk-times{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px;margin:18px 0 22px}
+.admin-time{min-height:69px;background:#192b20;border:1px solid #64816c;color:#f3f4ea;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:9px 5px}
+.admin-time strong{font-size:17px;font-variant-numeric:tabular-nums}
+.admin-time small{font-size:11px;color:#bfd1c0}
+.admin-time.selected{background:#a4c3a6;border:2px solid #e7f4df;color:#142018}
+.admin-time.selected small{color:#142018;font-weight:700}
+.admin-time.unavailable{opacity:.4;border-color:#4b5850;cursor:not-allowed}
+.admin-bulk-confirm{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-top:14px;border-top:1px solid #516453}
+.admin-bulk-confirm strong{margin-right:auto}
+.admin-bulk-confirm button{padding:12px 16px}
+.admin-bulk-review{margin:15px 0;color:#d9e4d9}
+.admin-bulk-review summary{cursor:pointer}
+.admin-bulk-status{border:1px solid #8dab8e;background:#263e2d;padding:12px;border-radius:8px;color:#eef5e9}
+.admin-advanced{max-width:100%}
+.admin-advanced>summary{cursor:pointer;font-weight:700}
+.admin-advanced>div{padding-top:15px}
+@media(max-width:1000px){.admin-bulk-times{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:550px){.admin-bulk-times{grid-template-columns:repeat(3,minmax(0,1fr))}.admin-day{flex-basis:105px}.admin-bulk-confirm button{flex:1 1 110px}.admin-bulk-confirm strong{flex-basis:100%}}
