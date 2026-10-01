@@ -48,7 +48,7 @@ export async function POST(request:NextRequest){
     if(b?.guest_email){
      const site=process.env.NEXT_PUBLIC_SITE_URL||"https://www.hallfarmgym.com";
      const manage=site+"/payg/manage?token="+b.guest_access_token;
-     try{await sendEmail(b.guest_email,"Hall Farm Gym PAYG booking confirmed",bookingEmail("payg",b.starts_at,b.party_size,'<p><a href="'+manage+'">View or cancel your booking</a>. Keep this private link safe.</p><p>Everyone attending must complete the required gym safety information before training.</p>'))}catch(e){console.error("Guest PAYG confirmation email",e)}
+     try{await sendEmail(b.guest_email,"Hall Farm Gym PAYG booking confirmed",'<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#18201c"><h1>Your PAYG session is booked.</h1><p>'+new Date(b.starts_at).toLocaleString("en-GB",{dateStyle:"full",timeStyle:"short",timeZone:"Europe/London"})+' · '+b.party_size+' people</p><p><a href="'+manage+'">View or cancel your booking</a>. Keep this link private.</p><p>Everyone attending must complete their required health and safety information before training. If a health review is needed, we will be in touch.</p><p>The Hall Farm Gym</p></div>')}catch(e){console.error("Guest PAYG confirmation email",e)}
      try{await sendEmail("wrayfitness04@gmail.com","Hall Farm Gym PAR-Q submission",'<p>A PAYG customer has completed their PAR-Q. Review any flagged answers in <a href="'+site+'/admin">the gym admin area</a>.</p>')}catch(e){console.error("Guest PAYG PAR-Q notification",e)}
     }
    }
