@@ -1,0 +1,11 @@
+"use client";
+import {useEffect,useState} from "react";
+export default function Confirmed(){
+ const[info,setInfo]=useState<any>(null),[attempts,setAttempts]=useState(0);
+ useEffect(()=>{const id=new URLSearchParams(location.search).get("session_id");if(!id){setInfo({status:"invalid"});return}let timer:any;fetch("/api/payg/status?session_id="+encodeURIComponent(id)).then(r=>r.json()).then(x=>{setInfo(x);if(x.status==="processing"&&attempts<10)timer=setTimeout(()=>setAttempts(n=>n+1),1500)}).catch(()=>{setInfo({status:"processing"})});return()=>clearTimeout(timer)},[attempts]);
+ const when=info?.startsAt?new Date(info.startsAt):null;
+ return <main><section className="hero"><p className="eyebrow">PAY AS YOU GO</p>
+ {info?.status==="confirmed"?<><h2>You're booked in!</h2><p>Your confirmation and private booking link are on their way to your email.</p><article className="notice"><strong>{when?.toLocaleString("en-GB",{dateStyle:"full",timeStyle:"short",timeZone:"Europe/London"})}</strong><p>{info.partySize} {info.partySize===1?"person":"people"} · private gym session</p></article><p>Please check your inbox and junk folder. Everyone attending must complete any required health and safety checks before training.</p></>:<><h2>{info?.status==="invalid"?"Booking reference missing":"Confirming your payment…"}</h2><p>If you've paid, please don't pay again. We'll email your booking once Stripe confirms it. Check your inbox, or contact us if it hasn't arrived.</p></>}
+ <a className="secondary" href="/">Back to Hall Farm Gym</a>
+ </section></main>
+}
