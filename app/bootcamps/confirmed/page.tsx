@@ -1,6 +1,6 @@
 "use client";
 import {useEffect,useState} from "react";
-import {supabase} from "../../lib/supabase";
+import {supabase} from "../../../lib/supabase";
 export default function ClassConfirmed(){
  const[data,setData]=useState<any>(null),[tries,setTries]=useState(0);
  useEffect(()=>{const p=new URLSearchParams(location.search),bookingId=p.get("booking_id"),sessionId=p.get("session_id");let timeout:any;
