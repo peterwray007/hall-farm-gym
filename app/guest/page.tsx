@@ -1,5 +1,5 @@
-import InductionDisclosure from "../components/induction-disclosure";
-"use client";import{useEffect,useState}from"react";import{supabase}from"../../lib/supabase";
+"use client";
+import InductionDisclosure from "../components/induction-disclosure";import{useEffect,useState}from"react";import{supabase}from"../../lib/supabase";
 const qs=[["heart_condition","Heart condition / medical exercise restriction?"],["chest_pain","Chest pain during activity or at rest?"],["dizziness","Dizziness, loss of balance or consciousness?"],["medical_reason","Any other medical reason exercise may be unsuitable without advice?"]];
 export default function Guest(){const[email,setEmail]=useState(""),[a,setA]=useState<any>({}),[agree,setAgree]=useState(false),[induction,setInduction]=useState(false),[healthConsent,setHealthConsent]=useState(false),[docs,setDocs]=useState<any[]>([]),[docsLoading,setDocsLoading]=useState(true),[docsError,setDocsError]=useState(""),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false);const id=typeof window!=="undefined"?new URLSearchParams(location.search).get("token"):"";
 useEffect(()=>{fetch("/api/gym-documents",{cache:"no-store"}).then(async r=>{if(!r.ok)throw new Error("Failed to load");const j=await r.json();if(!j.documents?.length)throw new Error("No documents");setDocs(j.documents)}).catch(()=>setDocsError("The gym terms and induction could not be loaded. Please refresh this page.")).finally(()=>setDocsLoading(false))},[]);
