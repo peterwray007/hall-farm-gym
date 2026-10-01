@@ -40,6 +40,18 @@ export async function POST(request:NextRequest){
  try{
   if(event.type==="checkout.session.completed"||event.type==="checkout.session.async_payment_succeeded"){
    const s=event.data.object as any;
+   if(s.metadata?.kind==="guest_payg"&&s.payment_status==="paid"){
+    const pi=objectId(s.payment_intent);
+    const {data:bid,error}=await db.rpc("confirm_guest_payg_booking",{p_session_id:s.id,p_payment_intent:pi});
+    if(error)throw error;
+    const {data:b}=await db.from("bookings").select("starts_at,party_size,guest_name,guest_email,guest_access_token").eq("id",bid).single();
+    if(b?.guest_email){
+     const site=process.env.NEXT_PUBLIC_SITE_URL||"https://www.hallfarmgym.com";
+     const manage=site+"/payg/manage?token="+b.guest_access_token;
+     try{await sendEmail(b.guest_email,"Hall Farm Gym PAYG booking confirmed",bookingEmail("payg",b.starts_at,b.party_size,'<p><a href="'+manage+'">View or cancel your booking</a>. Keep this private link safe.</p><p>Everyone attending must complete the required gym safety information before training.</p>'))}catch(e){console.error("Guest PAYG confirmation email",e)}
+     try{await sendEmail("wrayfitness04@gmail.com","Hall Farm Gym PAR-Q submission",'<p>A PAYG customer has completed their PAR-Q. Review any flagged answers in <a href="'+site+'/admin">the gym admin area</a>.</p>')}catch(e){console.error("Guest PAYG PAR-Q notification",e)}
+    }
+   }
    if(s.metadata?.kind==="member_guest"&&s.payment_status==="paid"){const pi=objectId(s.payment_intent);const {data:bid,error}=await db.rpc("confirm_member_guest_payment",{p_hold_id:s.metadata.hold_id,p_session_id:s.id,p_payment_intent:pi});if(error)throw error;const{data:b}=await db.from("bookings").select("starts_at,party_size,user_id").eq("id",bid).single();if(b){const{data:u}=await db.auth.admin.getUserById(b.user_id);if(u.user?.email){try{await sendEmail(u.user.email,"Hall Farm Gym booking confirmed",bookingEmail("member_guest",b.starts_at,b.party_size))}catch(e){console.error("guest booking email",e)}}}}
    if(s.metadata?.kind==="payg"&&s.payment_status==="paid"){
     const pi=typeof s.payment_intent==="string"?s.payment_intent:s.payment_intent?.id||null;
