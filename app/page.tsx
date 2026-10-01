@@ -1,9 +1,7 @@
-"use client";
-import {useEffect,useState} from "react";
-import {supabase} from "../lib/supabase";
+import {adminClient} from "../lib/supabase-server";
+export const dynamic="force-dynamic";
 type P={code:string;name:string;price_pence:number;monthly_bookings:number;named_members:number;guest_passes:number};
-export default function Home(){const[p,setP]=useState<P[]>([]);
-useEffect(()=>{supabase().from("membership_plans").select("code,name,price_pence,monthly_bookings,named_members,guest_passes").eq("active",true).order("price_pence").then(({data})=>setP(data||[]))},[]);
+export default async function Home(){const{data,error}=await adminClient().from("membership_plans").select("code,name,price_pence,monthly_bookings,named_members,guest_passes").eq("active",true).order("price_pence");if(error)console.error("Homepage memberships",error.message);const p:P[]=data||[];
 return <main>
 <section className="hero"><p className="eyebrow">PRIVATE HIRE • HALL FARM</p><h1>YOUR GYM.<br/>YOUR TIME.</h1><p className="lead">Book the whole gym for yourself. Come on your own, bring a friend or train with a small group of up to five — it’s your session, so you can just get on with your training without a busy gym around you.</p><div className="actions"><a className="primary" href="/book">Book a session</a><a className="secondary" href="/membership">Become a member</a></div><div className="facts"><span>07:00–21:00</span><span>50 minute private sessions</span><span>Up to 5 people</span></div></section>
 <section id="membership"><p className="eyebrow">MEMBERSHIP</p><h2>Simple memberships. Private sessions.</h2><div className="cards">{p.map(x=><article key={x.code}><h3>{x.name}</h3><div className="price">£{(x.price_pence/100).toFixed(x.price_pence%100?2:0)}<small>/month</small></div><p>{x.monthly_bookings} private gym bookings each month.</p><p>{x.named_members>1?`Train together with your ${x.named_members===2?"partner":"group of three"}. Each visit uses one booking, even when you all come together.`:"Enjoy the whole gym to yourself. Each visit uses one booking."}</p><p>Want to bring one extra non-member? Add them for £5 for that session.</p><a className="primary" href={`/join?plan=${x.code}`}>Choose {x.name}</a></article>)}</div><p className="membership-more"><a className="secondary" href="/membership">See all memberships &amp; join</a></p></section>
