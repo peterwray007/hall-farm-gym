@@ -22,7 +22,7 @@ export default function AdminBulkCalendar(){
  const days=useMemo(()=>[...new Set(slots.map(s=>londonDay(s.starts_at)))], [slots]);
  const visible=slots.filter(s=>londonDay(s.starts_at)===selectedDay);
  function toggle(id:string){setNotice("");setSelected(prev=>prev.includes(id)?prev.filter(t=>t!==id):prev.length>=100?prev:[...prev,id].sort())}
- function setType(v:string){setPurpose(v);setNote(v==="pt"?"Personal training":v==="maintenance"?"Maintenance":"Class / gym reserved")}
+ function setType(v:string){setPurpose(v);setNote(v==="pt"?"Personal training":v==="maintenance"?"Maintenance":"Gym reserved")}
  async function confirm(){
   if(!selected.length||busy)return;
   setBusy(true);setNotice("");
@@ -34,7 +34,7 @@ export default function AdminBulkCalendar(){
   <p className="eyebrow">QUICK RESERVATIONS · NEXT 30 DAYS</p>
   <h3>Tap the sessions you need</h3>
   <p>Choose a day, tap as many available times as you need, then confirm them all together. Already-booked or held sessions cannot be selected. Customers' booking windows stay unchanged.</p>
-  <div className="admin-bulk-type"><label>Reserve for <select aria-label="Reservation type" value={purpose} onChange={e=>setType(e.target.value)}><option value="pt">Personal training</option><option value="admin_block">Class / gym use</option><option value="maintenance">Maintenance</option></select></label><label>Note <input aria-label="Reservation note" maxLength={250} value={note} onChange={e=>setNote(e.target.value)}/></label></div>
+  <div className="admin-bulk-type"><label>Reserve for <select aria-label="Reservation type" value={purpose} onChange={e=>setType(e.target.value)}><option value="pt">Personal training</option><option value="admin_block">Close gym / other (not a bookable class)</option><option value="maintenance">Maintenance</option></select></label><label>Note <input aria-label="Reservation note" maxLength={250} value={note} onChange={e=>setNote(e.target.value)}/></label></div>
   {loading&&<p>Loading the next 30 days…</p>}
   {!loading&&<><div className="admin-bulk-days" aria-label="Choose a date">{days.map(d=><button key={d} className={d===selectedDay?"admin-day active":"admin-day"} onClick={()=>setSelectedDay(d)} type="button"><strong>{dayLabel(slots.find(s=>londonDay(s.starts_at)===d)!.starts_at)}</strong><small>{slots.filter(s=>londonDay(s.starts_at)===d&&s.is_available).length} free</small></button>)}</div>
   <div className="admin-bulk-times">{visible.map(s=>{const picked=selected.includes(s.starts_at);return <button key={s.starts_at} type="button" disabled={!s.is_available} aria-pressed={picked} onClick={()=>toggle(s.starts_at)} className={picked?"admin-time selected":s.is_available?"admin-time":"admin-time unavailable"}><strong>{time(s.starts_at)}</strong><small>{picked?"✓ Selected":s.is_available?"Available":"Unavailable"}</small></button>})}</div></>}
