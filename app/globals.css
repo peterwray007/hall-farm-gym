@@ -52,3 +52,16 @@ form{max-width:100%}form input{max-width:100%}
 /* Consistent accessible checkboxes, even beside multi-line induction text */
 label.check{display:flex;align-items:flex-start;gap:12px;max-width:850px;line-height:1.5}
 label.check input[type="checkbox"]{box-sizing:border-box;display:block;flex:0 0 18px;width:18px;height:18px;min-width:18px;min-height:18px;max-width:none;padding:0;margin:2px 0 0;accent-color:#9bb8a5;appearance:auto}
+
+/* Keep the induction short by default; make full instructions easy to reveal */
+.induction-summary{max-width:850px}
+.induction-summary>p{margin:12px 0;line-height:1.65}
+.induction-expand{margin:16px 0}
+.induction-expand summary{display:inline-block;cursor:pointer;padding:11px 16px;border:1px solid #8aa694;border-radius:7px;background:#34483b;color:#f5f7f0;font-weight:700;list-style:none}
+.induction-expand summary::-webkit-details-marker{display:none}
+.induction-expand summary:after{content:" ▾";font-weight:normal}
+.induction-expand[open] summary:after{content:" ▴"}
+.induction-expand summary:focus-visible{outline:2px solid #c5d8cb;outline-offset:3px}
+.induction-expand>p{margin:18px 0;line-height:1.75;white-space:pre-line;color:#e0e7df}
+.induction-summary small{display:block;color:#b7c9bb;line-height:1.5}
+.induction-summary small a{text-decoration:underline;text-underline-offset:3px}
