@@ -25,3 +25,15 @@ form{max-width:100%}form input{max-width:100%}
 @media(max-width:700px){.siteheader-inner{gap:10px}.siteheader nav{gap:10px;flex-wrap:wrap;justify-content:flex-end}.siteheader nav a:first-child{display:inline}.siteheader nav a{font-size:13px}.brand img{width:112px}.sitefooter{padding:24px 18px}.hero input,.joinfields input,.formgrid input{width:100%;margin:0 0 10px}.timeactions{grid-template-columns:1fr}.actions{flex-wrap:wrap}}
 
 .membership-page{padding:65px 0 80px;max-width:1100px}.membership-page h1{font:400 clamp(40px,6vw,64px)/1.05 Georgia,serif;margin:14px 0 22px}.membership-intro{max-width:740px;color:#d0d8d1;font-size:19px;line-height:1.55;margin-bottom:32px}.membership-cards article{display:flex;flex-direction:column}.membership-cards .membership-cta{margin-top:auto;text-align:center}.membership-cards p strong{color:var(--cream)}.membership-note{line-height:1.6;color:#c8d1c9;margin-top:23px}.membership-note a{text-decoration:underline;text-underline-offset:3px}.membership-more{margin:28px 0 0}@media(max-width:700px){.membership-page{padding:40px 0 60px}.membership-intro{font-size:17px}.membership-cards .membership-cta{width:100%}}
+
+/* Clear post-payment booking confirmation */
+.booking-success{max-width:760px;margin:0 auto;padding:85px 0 100px!important;text-align:center;border:0!important;min-height:65vh}
+.booking-success h1{font:400 clamp(44px,7vw,72px)/1.08 Georgia,serif;margin:16px auto 22px}
+.booking-success .success-intro{font-size:18px;line-height:1.6;color:#d0d8d1;max-width:620px;margin:0 auto 28px}
+.success-icon{width:84px;height:84px;border-radius:50%;display:grid;place-items:center;background:#8ba894;color:#142219;font-size:52px;font-weight:700;margin:0 auto 27px}
+.success-details{text-align:left;background:#222c27;border:1px solid #66796d;border-radius:16px;padding:28px 32px;margin:36px auto;max-width:600px}
+.success-details h2{font-size:30px;margin:10px 0 8px}
+.success-details p:not(.eyebrow){color:#d5ddd6;line-height:1.6}
+.success-details .success-time{font:400 43px Georgia,serif;color:#f3efe6!important;margin:8px 0 18px}
+.booking-success .actions{justify-content:center;flex-wrap:wrap}
+@media(max-width:700px){.booking-success{padding:55px 0 80px!important}.success-details{padding:22px}.booking-success .actions>*{flex:1 1 190px;text-align:center}}
