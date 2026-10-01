@@ -6,6 +6,6 @@ export async function GET(){
  try{
   const {data,error}=await adminClient().rpc("membership_places_remaining");
   if(error)throw error;
-  return NextResponse.json({totalLimit:40,initialRelease:35,available:Number(data)||0},{headers:{"Cache-Control":"no-store"}});
+  return NextResponse.json({totalLimit:35,available:Number(data)||0},{headers:{"Cache-Control":"no-store"}});
  }catch(e){console.error("Membership capacity unavailable",e);return NextResponse.json({error:"Membership availability is temporarily unavailable"},{status:503})}
 }
