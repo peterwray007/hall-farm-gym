@@ -12,7 +12,7 @@ export async function GET(req:NextRequest){
   if(error||!user)return NextResponse.json({error:"Invalid session"},{status:401});
   const u=new URL(req.url),id=u.searchParams.get("id"),sessionId=u.searchParams.get("session_id");
   const db=adminClient();
-  let query=db.from("bookings").select("id,starts_at,party_size,kind,guest_fee_paid,status").eq("user_id",user.id).eq("status","confirmed");
+  let query=db.from("bookings").select("id,starts_at,party_size,kind,guest_fee_paid,status,bringing_guest").eq("user_id",user.id).eq("status","confirmed");
   if(sessionId){
    if(!/^cs_(live|test)_[a-zA-Z0-9]+$/.test(sessionId)||sessionId.length>220)return NextResponse.json({error:"Invalid checkout reference"},{status:400});
    query=query.eq("stripe_checkout_session_id",sessionId);
@@ -24,7 +24,7 @@ export async function GET(req:NextRequest){
   }
   const {data:b,error:be}=await query.order("created_at",{ascending:false}).limit(1).maybeSingle();
   if(be)throw be;
-  if(b)return NextResponse.json({status:"confirmed",booking:b,accessCode:gymAccessCode()},{headers:{"Cache-Control":"private, no-store"}});
+  if(b){const {data:guestReview}=b.bringing_guest?await db.from("guest_waivers").select("needs_review").eq("booking_id",b.id).maybeSingle():{data:null};const awaitingGuest=b.bringing_guest&&(!guestReview||guestReview.needs_review);return NextResponse.json({status:"confirmed",booking:b,accessCode:awaitingGuest?null:gymAccessCode(),accessPending:awaitingGuest},{headers:{"Cache-Control":"private, no-store"}});}
   if(sessionId&&process.env.STRIPE_SECRET_KEY){
    const session=await new Stripe(process.env.STRIPE_SECRET_KEY).checkout.sessions.retrieve(sessionId);
    if(session.metadata?.user_id!==user.id)return NextResponse.json({error:"Booking not found"},{status:404});
