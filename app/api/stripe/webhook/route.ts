@@ -1,3 +1,4 @@
+import {accessCodeEmail} from "../../../../lib/gym-access";
 import {NextRequest,NextResponse} from "next/server";
 import Stripe from "stripe";
 import {adminClient} from "../../../../lib/supabase-server";
@@ -45,10 +46,11 @@ export async function POST(request:NextRequest){
     const {data:bid,error}=await db.rpc("confirm_guest_payg_booking",{p_session_id:s.id,p_payment_intent:pi});
     if(error)throw error;
     const {data:b}=await db.from("bookings").select("starts_at,party_size,guest_name,guest_email,guest_access_token").eq("id",bid).single();
+    const {data:health}=await db.from("guest_waivers").select("needs_review").eq("booking_id",bid).maybeSingle();
     if(b?.guest_email){
      const site=process.env.NEXT_PUBLIC_SITE_URL||"https://www.hallfarmgym.com";
      const manage=site+"/payg/manage?token="+b.guest_access_token;
-     try{await sendEmail(b.guest_email,"Hall Farm Gym PAYG booking confirmed",'<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#18201c"><h1>Your PAYG session is booked.</h1><p>'+new Date(b.starts_at).toLocaleString("en-GB",{dateStyle:"full",timeStyle:"short",timeZone:"Europe/London"})+' · '+b.party_size+' people</p><p><a href="'+manage+'">View or cancel your booking</a>. Keep this link private.</p><p>Everyone attending must complete their required health and safety information before training. If a health review is needed, we will be in touch.</p><p>The Hall Farm Gym</p></div>')}catch(e){console.error("Guest PAYG confirmation email",e)}
+     try{await sendEmail(b.guest_email,"Hall Farm Gym PAYG booking confirmed",'<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#18201c"><h1>Your PAYG session is booked.</h1><p>'+new Date(b.starts_at).toLocaleString("en-GB",{dateStyle:"full",timeStyle:"short",timeZone:"Europe/London"})+' · '+b.party_size+' people</p><p><a href="'+manage+'">View or cancel your booking</a>. Keep this link private.</p>'+(health?.needs_review?'<p>Your PAR-Q requires a health review. We will contact you before releasing the entry code.</p>':accessCodeEmail())+'<p>Everyone attending must complete their required health and safety information before training.</p><p>The Hall Farm Gym</p></div>')}catch(e){console.error("Guest PAYG confirmation email",e)}
      try{await sendEmail("wrayfitness04@gmail.com","Hall Farm Gym PAR-Q submission",'<p>A PAYG customer has completed their PAR-Q. Review any flagged answers in <a href="'+site+'/admin">the gym admin area</a>.</p>')}catch(e){console.error("Guest PAYG PAR-Q notification",e)}
     }
    }
