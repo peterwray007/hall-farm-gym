@@ -15,7 +15,7 @@ export async function POST(req:NextRequest){
   if(ue||!user) return NextResponse.json({error:"Please sign in again."},{status:401});
   const body=await req.json(); const db=adminClient();
   if(body.type==="membership"){
-    const {data:cleared,error:ce}=await db.rpc("member_is_cleared",{p_uid:user.id});if(ce||cleared!==true)return NextResponse.json({error:"Please complete your health form, gym induction and gym terms before joining."},{status:409});
+    const {data:cleared,error:ce}=await db.rpc("member_is_cleared",{p_uid:user.id});if(ce||cleared!==true)return NextResponse.json({error:"Please complete your health form, online safety acknowledgement and gym terms before joining."},{status:409});
     const {data:existing}=await db.from("memberships").select("id,status").eq("owner_id",user.id).in("status",["active","past_due","paused"]).limit(1).maybeSingle();if(existing)return NextResponse.json({error:"You already have a membership. Manage it from My Account."},{status:409});
     const code=String(body.plan||"").toLowerCase();
     const {data:plan,error}=await db.from("membership_plans").select("code,stripe_price_id").eq("code",code).eq("active",true).single();
