@@ -48,3 +48,7 @@ form{max-width:100%}form input{max-width:100%}
 .credit-number{display:block;font:700 clamp(46px,8vw,70px)/1 ui-monospace,SFMono-Regular,Menlo,monospace!important;color:#f4f4e8!important;margin:10px 0 6px!important;font-variant-numeric:tabular-nums}
 .credit-label{font-size:17px!important;color:#d4e0d6!important;font-weight:600;margin:0 0 20px!important}
 .membership-page .membership-intro,.bookingintro{line-height:1.65}
+
+/* Consistent accessible checkboxes, even beside multi-line induction text */
+label.check{display:flex;align-items:flex-start;gap:12px;max-width:850px;line-height:1.5}
+label.check input[type="checkbox"]{box-sizing:border-box;display:block;flex:0 0 18px;width:18px;height:18px;min-width:18px;min-height:18px;max-width:none;padding:0;margin:2px 0 0;accent-color:#9bb8a5;appearance:auto}
