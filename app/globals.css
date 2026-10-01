@@ -65,3 +65,35 @@ label.check input[type="checkbox"]{box-sizing:border-box;display:block;flex:0 0 
 .induction-expand>p{margin:18px 0;line-height:1.75;white-space:pre-line;color:#e0e7df}
 .induction-summary small{display:block;color:#b7c9bb;line-height:1.5}
 .induction-summary small a{text-decoration:underline;text-underline-offset:3px}
+
+/* Installed app and customer mobile dashboard */
+.mobile-app-nav{display:none}
+.app-dashboard{max-width:850px;margin:28px 0 38px}
+.app-dashboard-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.app-mini-card{padding:23px;border:1px solid #506658;background:#27382c;border-radius:15px;min-width:0}
+.app-mini-card .eyebrow{margin:0 0 13px}
+.app-mini-card p:last-child{color:#ccd8cc;font-size:14px;line-height:1.55}
+.app-mini-card a{text-decoration:underline;text-underline-offset:3px}
+.app-big-number{font:700 clamp(46px,8vw,64px)/1.1 Arial,sans-serif;color:#f4f1e8}
+.app-next-time{font:400 clamp(19px,3.5vw,27px)/1.2 Georgia,serif;display:block;min-height:56px;color:#f4f1e8}
+.app-quick-links{display:flex;gap:12px;margin:16px 0 0;flex-wrap:wrap}
+.app-quick-links a{text-align:center}
+.app-install-panel{padding:10px 0}
+.app-install-panel p,.app-install-compact p{line-height:1.65;color:#d0d8d1}
+@media(max-width:700px){
+ .siteheader-inner{height:65px}
+ .siteheader nav{display:none}
+ .mobile-app-nav{display:grid!important;grid-template-columns:repeat(4,1fr);position:fixed;bottom:0;left:0;right:0;z-index:80;gap:0;background:#1d2c22;border-top:1px solid #65786b;padding:9px 5px calc(10px + env(safe-area-inset-bottom,0px));box-shadow:0 -5px 20px rgba(0,0,0,.22)}
+ .mobile-app-nav a{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;text-align:center;min-width:0;padding:1px 2px;color:#e0e9de;font-size:12px;font-weight:700;text-decoration:none}
+ .mobile-app-nav a span{font-size:25px;font-weight:400;line-height:1.1}
+ .sitefooter{padding-bottom:calc(110px + env(safe-area-inset-bottom,0px))}
+ main{padding-bottom:38px}
+ .app-dashboard{margin:20px 0 30px}
+ .app-dashboard-cards{gap:9px}
+ .app-mini-card{padding:16px 13px}
+ .app-mini-card .eyebrow{font-size:10px;letter-spacing:1.5px}
+ .app-mini-card p:last-child{font-size:12px}
+ .app-next-time{font-size:20px;min-height:54px}
+ .app-quick-links{display:grid;grid-template-columns:1fr 1fr}
+ .app-quick-links a{padding:13px 9px;font-size:13px}
+}
