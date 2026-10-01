@@ -1,0 +1,8 @@
+"use client";
+import {useEffect,useState} from "react";
+export default function Manage(){
+ const[b,setB]=useState<any>(null),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[token,setToken]=useState("");
+ useEffect(()=>{const t=new URLSearchParams(location.search).get("token")||"";setToken(t);fetch("/api/payg/manage?token="+encodeURIComponent(t)).then(r=>r.json()).then(x=>{setB(x.booking||null);if(x.error)setMsg(x.error)}).catch(()=>setMsg("Unable to load your booking."))},[]);
+ async function cancel(){if(!confirm("Are you sure you want to cancel this booking? Refunds depend on the cancellation window."))return;setBusy(true);const r=await fetch("/api/payg/manage",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token})});const x=await r.json();setMsg(x.message||x.error||"Unable to cancel.");if(r.ok)setB((v:any)=>({...v,status:"cancelled"}));setBusy(false)}
+ return <main><section className="hero"><p className="eyebrow">YOUR PAYG SESSION</p><h2>Manage your booking.</h2>{b&&<article className="notice"><p><strong>{new Date(b.starts_at).toLocaleString("en-GB",{dateStyle:"full",timeStyle:"short",timeZone:"Europe/London"})}</strong></p><p>{b.party_size} {b.party_size===1?"person":"people"} · {b.status}</p></article>}{msg&&<p role="status">{msg}</p>}{b?.status==="confirmed"&&<button className="secondary" disabled={busy} onClick={cancel}>{busy?"Cancelling…":"Cancel booking"}</button>}<p className="formhint">Please keep this private link safe. Need help? <a href="/contact">Contact WrayFitness</a>.</p></section></main>
+}
