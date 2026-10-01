@@ -24,7 +24,14 @@ export async function GET(req:NextRequest){
   }
   const {data:b,error:be}=await query.order("created_at",{ascending:false}).limit(1).maybeSingle();
   if(be)throw be;
-  if(b){const {data:guestReview}=b.bringing_guest?await db.from("guest_waivers").select("needs_review").eq("booking_id",b.id).maybeSingle():{data:null};const awaitingGuest=b.bringing_guest&&(!guestReview||guestReview.needs_review);return NextResponse.json({status:"confirmed",booking:b,accessCode:awaitingGuest?null:gymAccessCode(),accessPending:awaitingGuest},{headers:{"Cache-Control":"private, no-store"}});}
+  if(b){
+   const {data:induction}=await db.from("legal_documents").select("id").eq("document_type","gym_induction").eq("active",true).limit(1).maybeSingle();
+   const {data:accepted}=induction?await db.from("legal_acceptances").select("id").eq("user_id",user.id).eq("document_id",induction.id).maybeSingle():{data:null};
+   const inductionPending=!induction||!accepted;
+   const {data:guestReview}=b.bringing_guest?await db.from("guest_waivers").select("needs_review,induction_accepted_at").eq("booking_id",b.id).maybeSingle():{data:null};
+   const awaitingGuest=b.bringing_guest&&(!guestReview||guestReview.needs_review||!guestReview.induction_accepted_at);
+   return NextResponse.json({status:"confirmed",booking:b,accessCode:inductionPending||awaitingGuest?null:gymAccessCode(),accessPending:awaitingGuest,inductionPending},{headers:{"Cache-Control":"private, no-store"}});
+  }
   if(sessionId&&process.env.STRIPE_SECRET_KEY){
    const session=await new Stripe(process.env.STRIPE_SECRET_KEY).checkout.sessions.retrieve(sessionId);
    if(session.metadata?.user_id!==user.id)return NextResponse.json({error:"Booking not found"},{status:404});
