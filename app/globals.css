@@ -130,3 +130,20 @@ label.check input[type="checkbox"]{box-sizing:border-box;display:block;flex:0 0 
 
 /* The general mobile first-link rule must not override the Home tab flex alignment. */
 @media(max-width:700px){.siteheader .mobile-app-nav a:first-child{display:flex;align-items:center;justify-content:center}}
+
+/* Centred Hall Farm Gym header badge without altering the desktop links. */
+@media(min-width:1150px){
+ .siteheader-inner{position:relative}
+ .siteheader-inner>.brand{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+ .siteheader-inner>nav{margin-left:auto}
+}
+@media(max-width:700px){
+ .siteheader-inner{justify-content:center}
+ .siteheader-inner>.brand{margin:0 auto}
+}
+/* A second brand badge occupies unused space right of the hero; it never affects the text flow. */
+.hero{position:relative}
+.desktop-hero-logo{display:none}
+@media(min-width:1200px){
+ .desktop-hero-logo{display:block;position:absolute;left:calc(100% + 32px);top:160px;width:clamp(160px,16vw,225px);height:auto;max-width:calc(100vw - 100% - 80px);object-fit:contain;pointer-events:none}
+}
