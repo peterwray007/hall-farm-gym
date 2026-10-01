@@ -37,3 +37,9 @@ form{max-width:100%}form input{max-width:100%}
 .success-details .success-time{font:400 43px Georgia,serif;color:#f3efe6!important;margin:8px 0 18px}
 .booking-success .actions{justify-content:center;flex-wrap:wrap}
 @media(max-width:700px){.booking-success{padding:55px 0 80px!important}.success-details{padding:22px}.booking-success .actions>*{flex:1 1 190px;text-align:center}}
+
+/* Prominent four-digit gym entry code on confirmed bookings */
+.booking-success .access-code-box{border:2px solid #9fbaa6;background:#293a2e;text-align:center}
+.access-code-box .eyebrow{letter-spacing:2px}
+.access-code-number{font:700 clamp(43px,9vw,64px)/1.2 ui-monospace,SFMono-Regular,Menlo,monospace!important;color:#f6f6ed!important;letter-spacing:.20em;margin:12px auto 16px!important;font-variant-numeric:tabular-nums}
+@media(max-width:700px){.access-code-number{letter-spacing:.14em}}
