@@ -1,5 +1,5 @@
-import InductionDisclosure from "../components/induction-disclosure";
 "use client";
+import InductionDisclosure from "../components/induction-disclosure";
 import {useEffect,useState} from "react";
 const questions:[string,string][]=[
  ["heart_condition","Has a doctor advised you to exercise only under medical supervision, or do you have a heart condition?"],
