@@ -196,3 +196,10 @@ label.check input[type="checkbox"]{box-sizing:border-box;display:block;flex:0 0 
 .gym-class-slot .eyebrow{font-size:11px;color:#b6d3b5}
 .gym-class-slot>a{font-size:13px;padding:11px 15px}
 .bootcamp-listing{scroll-margin-top:25px}
+
+/* Inline editing for individually named and sized bootcamps. */
+.admin-class-edit{margin:14px 0;padding:15px;border:1px solid #66816b;border-radius:10px;background:#1a2b20}
+.admin-class-edit>label{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;color:#dbe7d9;font-size:13px}
+.admin-class-edit input{width:100%;margin:0}
+.admin-class-edit .actions{display:flex;gap:8px;margin:10px 0}
+.admin-class-edit .actions button{padding:10px 12px}
