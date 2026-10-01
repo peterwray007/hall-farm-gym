@@ -56,10 +56,12 @@ export async function POST(request:NextRequest){
     }
    }
    if(s.metadata?.kind==="guest_payg"&&s.payment_status==="paid"){
+    const {data:ih}=await db.from("guest_payg_holds").select("induction_accepted_at").eq("id",s.metadata.hold_id).maybeSingle();
     const pi=objectId(s.payment_intent);
     const {data:bid,error}=await db.rpc("confirm_guest_payg_booking",{p_session_id:s.id,p_payment_intent:pi});
     if(error)throw error;
     const {data:b}=await db.from("bookings").select("starts_at,party_size,guest_name,guest_email,guest_access_token").eq("id",bid).single();
+    if(ih?.induction_accepted_at){const {error:ie}=await db.from("guest_waivers").update({induction_accepted_at:ih.induction_accepted_at}).eq("booking_id",bid).eq("guest_email",b?.guest_email);if(ie)console.error("PAYG induction acknowledgement",ie)}
     const {data:health}=await db.from("guest_waivers").select("needs_review").eq("booking_id",bid).maybeSingle();
     if(b?.guest_email){
      const site=process.env.NEXT_PUBLIC_SITE_URL||"https://www.hallfarmgym.com";
