@@ -1,3 +1,4 @@
+import {gymAccessCode} from "../../../../lib/gym-access";
 import {NextRequest,NextResponse} from "next/server";
 import Stripe from "stripe";
 import {adminClient,userClient} from "../../../../lib/supabase-server";
@@ -23,7 +24,7 @@ export async function GET(req:NextRequest){
   }
   const {data:b,error:be}=await query.order("created_at",{ascending:false}).limit(1).maybeSingle();
   if(be)throw be;
-  if(b)return NextResponse.json({status:"confirmed",booking:b},{headers:{"Cache-Control":"no-store"}});
+  if(b)return NextResponse.json({status:"confirmed",booking:b,accessCode:gymAccessCode()},{headers:{"Cache-Control":"private, no-store"}});
   if(sessionId&&process.env.STRIPE_SECRET_KEY){
    const session=await new Stripe(process.env.STRIPE_SECRET_KEY).checkout.sessions.retrieve(sessionId);
    if(session.metadata?.user_id!==user.id)return NextResponse.json({error:"Booking not found"},{status:404});
