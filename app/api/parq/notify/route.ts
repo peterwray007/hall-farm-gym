@@ -10,7 +10,7 @@ export async function POST(req:NextRequest){
   let kind:"member"|"guest";
   let submissionId:string;
   if(body.kind==="member"){
-   const token=req.headers.get("authorization")?.replace(/^Bearer\\s+/,"");
+   const token=req.headers.get("authorization")?.replace(/^Bearer\s+/,"");
    if(!token)return NextResponse.json({error:"Sign in required"},{status:401});
    const {data:{user},error}=await userClient(token).auth.getUser(token);
    if(error||!user)return NextResponse.json({error:"Invalid session"},{status:401});
