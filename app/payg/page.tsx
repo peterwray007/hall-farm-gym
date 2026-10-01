@@ -9,14 +9,14 @@ const questions:[string,string][]=[
 export default function Payg(){
  const[slot,setSlot]=useState(""),[party,setParty]=useState(1),[settings,setSettings]=useState<{price:number,max:number}|null>(null);
  const[f,setF]=useState({name:"",email:"",phone:"",emergencyName:"",emergencyPhone:""});
- const[answers,setAnswers]=useState<Record<string,boolean>>({}),[healthConsent,setHealthConsent]=useState(false),[acceptTerms,setAcceptTerms]=useState(false),[busy,setBusy]=useState(false),[msg,setMsg]=useState("");
- useEffect(()=>{const u=new URLSearchParams(location.search);setSlot(u.get("startsAt")||"");setParty(Number(u.get("partySize")||1));fetch("/api/payg/details").then(r=>r.json()).then(x=>setSettings(x)).catch(()=>{})},[]);
+ const[answers,setAnswers]=useState<Record<string,boolean>>({}),[healthConsent,setHealthConsent]=useState(false),[acceptTerms,setAcceptTerms]=useState(false),[induction,setInduction]=useState(false),[docs,setDocs]=useState<any[]>([]),[busy,setBusy]=useState(false),[msg,setMsg]=useState("");
+ useEffect(()=>{const u=new URLSearchParams(location.search);setSlot(u.get("startsAt")||"");setParty(Number(u.get("partySize")||1));fetch("/api/induction").then(r=>r.json()).then(j=>setDocs(j.documents||[])).catch(()=>{});fetch("/api/payg/details").then(r=>r.json()).then(x=>setSettings(x)).catch(()=>{})},[]);
  async function submit(e:React.FormEvent){
   e.preventDefault();setMsg("");
-  if(questions.some(([k])=>typeof answers[k]!=="boolean")||!healthConsent||!acceptTerms){setMsg("Please answer all health questions and tick both consent boxes.");return}
+  if(questions.some(([k])=>typeof answers[k]!=="boolean")||!healthConsent||!acceptTerms||!induction){setMsg("Please answer all health questions and complete the induction and consent boxes.");return}
   setBusy(true);
   try{
-   const r=await fetch("/api/payg/checkout",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...f,answers,healthConsent,acceptTerms,startsAt:slot,partySize:party})});
+   const r=await fetch("/api/payg/checkout",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...f,answers,healthConsent,acceptTerms,inductionAccepted:induction,startsAt:slot,partySize:party})});
    const j=await r.json();if(!r.ok||!j.url){setMsg(j.error||"Unable to start payment.");setBusy(false);return}
    location.href=j.url;
   }catch(e){setMsg("Something went wrong. Please try again.");setBusy(false)}
@@ -32,7 +32,7 @@ export default function Payg(){
    <p>Please answer each question before you train. If an answer needs a health review, we’ll get in touch before you use the gym.</p>
    {questions.map(([k,q])=><label key={k} className="question"><span>{q}</span><select aria-label={q} value={answers[k]===undefined?"":String(answers[k])} required onChange={e=>setAnswers(x=>({...x,[k]:e.target.value==="true"}))}><option value="" disabled>Choose…</option><option value="false">No</option><option value="true">Yes</option></select></label>)}
    <label className="check"><input type="checkbox" required checked={healthConsent} onChange={e=>setHealthConsent(e.target.checked)}/>I consent to The Hall Farm Gym using my health answers to assess my safety and eligibility to train.</label>
-   <label className="check"><input type="checkbox" required checked={acceptTerms} onChange={e=>setAcceptTerms(e.target.checked)}/>I agree to the <a href="/terms-of-service" target="_blank" rel="noopener noreferrer">gym terms and cancellation policy</a> and have read the <a href="/privacy-policy" target="_blank" rel="noopener noreferrer">privacy policy</a>.</label>
+   <h3>Self-guided gym induction</h3>{docs.length?docs.map(d=><article className="legal" key={d.id}><strong>{d.title}</strong><p style={{whiteSpace:"pre-line"}}>{d.body}</p><small>Version {d.version}</small></article>):<p>Loading gym safety instructions…</p>}<label className="check"><input type="checkbox" required disabled={!docs.length} checked={induction} onChange={e=>setInduction(e.target.checked)}/> I have read and understood the self-guided induction, will follow the safety rules and will ask for a personal walkthrough before using unfamiliar equipment.</label><p className="formhint">Need a personal induction? <a href="/contact">Contact WrayFitness</a> before your session.</p><label className="check"><input type="checkbox" required checked={acceptTerms} onChange={e=>setAcceptTerms(e.target.checked)}/>I agree to the <a href="/terms-of-service" target="_blank" rel="noopener noreferrer">gym terms and cancellation policy</a> and have read the <a href="/privacy-policy" target="_blank" rel="noopener noreferrer">privacy policy</a>.</label>
    {party>1&&<p className="notice">Everyone in your group must complete the required health and safety registration before training. Please contact us for any additional guests.</p>}
    {msg&&<p role="alert" className="bookingmessage">{msg}</p>}
    <button type="submit" className="primary" disabled={busy||!when}>{busy?"Opening secure payment…":"Continue to secure payment"}</button>
