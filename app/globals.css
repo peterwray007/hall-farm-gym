@@ -127,3 +127,6 @@ label.check input[type="checkbox"]{box-sizing:border-box;display:block;flex:0 0 
  .siteheader .mobile-app-nav svg{display:block;width:23px;height:23px;flex:none}
  .siteheader .mobile-app-nav a span{font-size:11px;line-height:1.2;font-weight:600}
 }
+
+/* The general mobile first-link rule must not override the Home tab flex alignment. */
+@media(max-width:700px){.siteheader .mobile-app-nav a:first-child{display:flex;align-items:center;justify-content:center}}
