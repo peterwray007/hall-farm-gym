@@ -7,7 +7,7 @@ export async function POST(req:NextRequest){
  try{
   const b=await req.json();
   const required=["name","email","phone","emergencyName","emergencyPhone","startsAt"];
-  if(required.some(k=>!b[k])||!b.acceptTerms||!b.healthConsent)return NextResponse.json({error:"Complete all required details."},{status:400});
+  if(required.some(k=>!b[k])||!b.acceptTerms||!b.healthConsent||b.inductionAccepted!==true)return NextResponse.json({error:"Complete all required details."},{status:400});
   const keys=["heart_condition","chest_pain","dizziness","medical_reason"];
   if(keys.some(k=>typeof b.answers?.[k]!=="boolean"))return NextResponse.json({error:"Answer all health questions."},{status:400});
   const party=Number(b.partySize);
@@ -15,6 +15,10 @@ export async function POST(req:NextRequest){
   const {data:id,error}=await db.rpc("create_guest_payg_hold",{p_starts_at:b.startsAt,p_party_size:party,p_full_name:b.name,p_email:b.email,p_phone:b.phone,p_emergency_name:b.emergencyName,p_emergency_phone:b.emergencyPhone,p_health_answers:b.answers});
   if(error)return NextResponse.json({error:error.message},{status:409});
   holdId=id;
+  const {data:induction}=await db.from("legal_documents").select("id").eq("document_type","gym_induction").eq("active",true).limit(1);
+  if(!induction?.length)throw new Error("Gym induction is unavailable");
+  const {error:ie}=await db.from("guest_payg_holds").update({induction_accepted_at:new Date().toISOString()}).eq("id",id);
+  if(ie)throw ie;
   const {data:settings}=await db.from("gym_settings").select("payg_price_pence").single();
   if(!settings||!process.env.STRIPE_SECRET_KEY)throw new Error("Payment unavailable");
   const stripe=new Stripe(process.env.STRIPE_SECRET_KEY);
