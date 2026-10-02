@@ -11,8 +11,8 @@ export async function POST(req:NextRequest){
   const uc=userClient(token);const{data:{user},error:ue}=await uc.auth.getUser(token);
   if(ue||!user)return NextResponse.json({error:"Please sign in again."},{status:401});
   const db=adminClient();
-  const{data:p}=await db.from("profiles").select("role").eq("id",user.id).maybeSingle();
-  if(p?.role!=="admin")return NextResponse.json({error:"Admin required."},{status:403});
+  const{data:isAdmin}=await uc.rpc("is_admin");
+  if(isAdmin!==true)return NextResponse.json({error:"Admin required."},{status:403});
   const{id}=await req.json();if(!id)return NextResponse.json({error:"Booking required."},{status:400});
   const{data:b}=await db.from("bookings").select("id,kind,status,guest_fee_paid,stripe_payment_intent_id").eq("id",id).maybeSingle();
   if(!b)return NextResponse.json({error:"Booking not found."},{status:404});
