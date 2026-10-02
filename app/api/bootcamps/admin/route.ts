@@ -1,7 +1,7 @@
 import {NextRequest,NextResponse} from "next/server";
 import {adminClient,userClient} from "../../../../lib/supabase-server";
 export const runtime="nodejs";
-async function authorized(req:NextRequest){const token=req.headers.get("authorization")?.replace(/^Bearer\s+/,"");if(!token)return false;const {data:{user}}=await userClient(token).auth.getUser(token);if(!user)return false;const {data:p}=await adminClient().from("profiles").select("role").eq("id",user.id).single();return p?.role==="admin";}
+async function authorized(req:NextRequest){const token=req.headers.get("authorization")?.replace(/^Bearer\s+/,"");if(!token)return false;const uc=userClient(token);const {data:{user}}=await uc.auth.getUser(token);if(!user)return false;const {data:isAdmin}=await uc.rpc("is_admin");return isAdmin===true;}
 export async function POST(req:NextRequest){try{if(!await authorized(req))return NextResponse.json({error:"Admin required"},{status:403});const b=await req.json();const start=new Date(b.startsAt),end=new Date(b.endsAt),capacity=Number(b.capacity);
 if(!b.title||!Number.isFinite(start.getTime())||!Number.isFinite(end.getTime())||start<=new Date()||end<=start||!Number.isInteger(capacity)||capacity<1||capacity>8)return NextResponse.json({error:"Check class dates and choose up to 8 places"},{status:400});
 const token=req.headers.get("authorization")!.replace(/^Bearer\s+/,"");const {data:id,error}=await userClient(token).rpc("admin_publish_gym_bootcamp",{p_title:String(b.title),p_description:String(b.description||""),p_starts_at:start.toISOString(),p_ends_at:end.toISOString(),p_capacity:capacity});
