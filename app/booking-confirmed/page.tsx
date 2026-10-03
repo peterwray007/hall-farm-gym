@@ -1,7 +1,7 @@
 "use client";
 import {useEffect,useState} from "react";
 import {supabase} from "../../lib/supabase";
-type Booking={id:string;starts_at:string;party_size:number;kind:string;guest_fee_paid:boolean;status:string};
+type Booking={id:string;starts_at:string;party_size:number;kind:string;guest_fee_paid:boolean;status:string;credit_source?:string|null};
 export default function Confirmed(){
  const[b,setB]=useState<Booking|null>(null),[accessCode,setAccessCode]=useState<string|null>(null),[accessPending,setAccessPending]=useState(false),[inductionPending,setInductionPending]=useState(false),[pending,setPending]=useState(true),[paid,setPaid]=useState(false),[tries,setTries]=useState(0),[message,setMessage]=useState("");
  useEffect(()=>{
@@ -28,7 +28,7 @@ export default function Confirmed(){
  return <main><section className="booking-success">
   {b?<><div className="success-icon" aria-hidden="true">✓</div><p className="eyebrow">BOOKING CONFIRMED</p><h1>You're booked in!</h1>
    <p className="success-intro">Your private session at The Hall Farm Gym is confirmed. We've sent the details to your email.</p>
-   <article className="success-details"><p className="eyebrow">YOUR SESSION</p><h2>{when?.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:"Europe/London"})}</h2><p className="success-time">{when?.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",timeZone:"Europe/London"})}</p><p>{b.party_size} {b.party_size===1?"person":"people"} · 50-minute private gym session</p><p>{b.kind==="member"?(b.guest_fee_paid?"1 member credit + £5 guest":"1 member credit used"):`£${(12.5+5*Math.max(0,b.party_size-1)).toFixed(2)} PAYG`}</p></article>
+   <article className="success-details"><p className="eyebrow">YOUR SESSION</p><h2>{when?.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:"Europe/London"})}</h2><p className="success-time">{when?.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",timeZone:"Europe/London"})}</p><p>{b.party_size} {b.party_size===1?"person":"people"} · 50-minute private gym session</p><p>{b.kind==="member"?(b.guest_fee_paid?"1 gym credit + guest add-on":b.credit_source==="topup"?"1 extra credit used":b.credit_source==="gift"?"1 gifted credit used":"1 membership credit used"):`£${(12.5+5*Math.max(0,b.party_size-1)).toFixed(2)} PAYG`}</p></article>
    <article className="success-details access-code-box"><p className="eyebrow">YOUR GYM ENTRY CODE</p>{inductionPending?<p>Please complete the updated <a href="/onboarding">gym induction and safety acknowledgement</a> before your entry code can be released. You do not need to pay again.</p>:accessPending?<p>Your guest must complete the health and safety registration before we can release the entry code. You can return to this page after their registration is cleared.</p>:accessCode?<><p className="access-code-number">{accessCode}</p><p>Enter this four-digit code on the key box when you arrive. Keep it private and use it only for your booked session.</p></>:<p>Your four-digit entry code will be provided before your session once the key box is ready.</p>}</article>
    <div className="actions"><a className="primary" href="/account">View your bookings</a><a className="secondary" href="/">Back to homepage</a></div>
   </>:<><p className="eyebrow">{paid?"PAYMENT RECEIVED":"CHECKING YOUR BOOKING"}</p><h1>{paid?"Payment received. Just finalising your booking.":"Confirming your booking…"}</h1>
