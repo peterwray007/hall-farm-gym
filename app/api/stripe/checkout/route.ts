@@ -44,16 +44,16 @@ export async function POST(req:NextRequest){
     const {data:entitlement,error:ee}=await uc.rpc("my_booking_entitlement");
     const ent=entitlement?.[0];
     if(ee||!ent?.has_active_membership)return NextResponse.json({error:"Extra credits are only available with an active membership."},{status:409});
+    if(ent.topups_allowed!==true)return NextResponse.json({error:"Extra credits are not available once a membership has been cancelled."},{status:409});
     if(Number(ent.total_credits||0)>0)return NextResponse.json({error:"Extra credits are available once you have used your existing credits."},{status:409});
-    const {data:settings,error:se}=await db.from("gym_settings").select("topup_credit_price_pence").single();
-    if(se||!settings?.topup_credit_price_pence)throw new Error("Extra-credit pricing is not configured");
-    const unitAmount=Number(settings.topup_credit_price_pence);
+    const unitAmount=Number(ent.topup_price_pence);
+    if(!Number.isInteger(unitAmount)||unitAmount<1)throw new Error("Extra-credit pricing is not configured");
     const session=await stripe().checkout.sessions.create({
       mode:"payment",customer_email:user.email,
       line_items:[{price_data:{currency:"gbp",unit_amount:unitAmount,product_data:{name:"Hall Farm Gym extra member credit"}},quantity:credits}],
       success_url:`${SITE}/account?topup=success`,cancel_url:`${SITE}/account?topup=cancelled`,
       client_reference_id:user.id,
-      metadata:{kind:"credit_topup",user_id:user.id,credits:String(credits),unit_amount_pence:String(unitAmount),immediate_service_requested:"true"},
+      metadata:{kind:"credit_topup",user_id:user.id,credits:String(credits),unit_amount_pence:String(unitAmount),plan_code:String(ent.plan_code||""),immediate_service_requested:"true"},
       payment_intent_data:{metadata:{kind:"credit_topup",user_id:user.id,credits:String(credits)}}
     });
     return NextResponse.json({url:session.url});
