@@ -203,3 +203,52 @@ label.check input[type="checkbox"]{box-sizing:border-box;display:block;flex:0 0 
 .admin-class-edit input{width:100%;margin:0}
 .admin-class-edit .actions{display:flex;gap:8px;margin:10px 0}
 .admin-class-edit .actions button{padding:10px 12px}
+
+
+/* Final visual polish: understated, premium and deliberately simple. */
+:root{--ink:#162019;--panel:#202b25;--panel-soft:#26342c;--sage:#8ca591;--sage-deep:#6f8776;--cream:#f4f0e7;--muted:#afbbb3;--line:#39483f}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(180deg,#162019 0%,#18221b 55%,#151e18 100%);min-height:100vh;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.siteheader{position:sticky;top:0;background:rgba(22,32,25,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);z-index:90}
+.siteheader-inner>nav a{position:relative;color:#d8e0da;font-size:14px;font-weight:650}
+.siteheader-inner>nav a:after{content:"";position:absolute;left:0;right:100%;bottom:-8px;height:1px;background:#adc0b1;transition:right .18s ease}
+.siteheader-inner>nav a:hover:after{right:0}
+.hero{padding-top:96px}
+.hero h1{letter-spacing:-.035em;text-wrap:balance}
+.lead{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:19px;line-height:1.7;color:#d8ddd8;max-width:710px}
+section:not(.hero){padding-top:74px;padding-bottom:74px}
+h2{letter-spacing:-.025em;text-wrap:balance}
+.primary,.secondary,button{transition:transform .14s ease,background .14s ease,border-color .14s ease,box-shadow .14s ease}
+.primary{background:#96af9b;color:#142018;box-shadow:0 8px 22px rgba(0,0,0,.13)}
+.primary:hover:not(:disabled){background:#a6bda9;transform:translateY(-1px);box-shadow:0 10px 28px rgba(0,0,0,.18)}
+.secondary:hover:not(:disabled){border-color:#91aa98;background:#223027;transform:translateY(-1px)}
+.cards{gap:16px}
+.cards article,.notice,.legal,.timecard,.app-mini-card{background:linear-gradient(145deg,rgba(39,52,44,.96),rgba(31,43,36,.96));border-color:#425449;box-shadow:0 12px 35px rgba(0,0,0,.09)}
+.cards article{transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+.cards article:hover{transform:translateY(-2px);border-color:#5c7263;box-shadow:0 16px 38px rgba(0,0,0,.14)}
+.price{letter-spacing:-.035em}
+.membership-cards .price{margin-bottom:8px}
+.membership-cards article p{margin:8px 0 12px}
+.membership-cards .membership-cta{margin-top:18px}
+.notice h3{margin-top:0;font:400 25px Georgia,serif}
+.bookingmessage,.admin-inline-status{max-width:850px;padding:13px 15px;border:1px solid #78917e;border-radius:9px;background:#25382b;color:#ecf2eb;line-height:1.5}
+.topup-card{border-color:#78917e}
+.topup-card label:not(.check){display:flex;align-items:center;gap:12px;font-weight:700}
+.topup-card label:not(.check) input{width:90px;margin:0}
+.topup-total{font-size:20px;color:#f4f0e7!important}
+input,select,textarea{background:#1d2922;border-color:#4d6355;color:#f5f2e9}
+input::placeholder,textarea::placeholder{color:#8f9d94}
+input:focus,select:focus,textarea:focus{border-color:#95ad9a;box-shadow:0 0 0 3px rgba(149,173,154,.11)}
+.sitefooter{color:#aab6ae;line-height:1.55}
+.sitefooter span{flex-basis:100%;margin-top:3px;color:#7f8d84}
+.admin-inline-status{margin:14px 0 0}
+.eyebrow{color:#adc0b1}
+@media(max-width:700px){
+ body{background:#162019}
+ .siteheader{position:sticky;top:0}
+ .hero{padding-top:60px}
+ .hero h1{font-size:58px}
+ section:not(.hero){padding-top:54px;padding-bottom:54px}
+ .lead{font-size:17px}
+ .cards article:hover{transform:none}
+ .primary,.secondary{min-height:46px}
+}
