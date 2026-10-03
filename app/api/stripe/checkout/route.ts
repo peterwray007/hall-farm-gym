@@ -59,6 +59,8 @@ export async function POST(req:NextRequest){
     return NextResponse.json({url:session.url});
   }
   if(body.type==="member_guest"){
+    const {data:ack}=await db.from("booking_acknowledgements").select("group_responsibility,adult_supervision").eq("user_id",user.id).maybeSingle();
+    if(!ack?.group_responsibility||!ack?.adult_supervision)return NextResponse.json({error:"Please confirm the saved booking safety requirements first."},{status:409});
     const startsAt=String(body.startsAt||""); const partySize=Math.max(2,Math.min(6,Number(body.partySize)||2));
     const {data:holdId,error:he}=await db.rpc("create_member_guest_hold",{p_user_id:user.id,p_starts_at:startsAt,p_party_size:partySize});
     if(he)return NextResponse.json({error:he.message},{status:409});
@@ -66,7 +68,8 @@ export async function POST(req:NextRequest){
     catch(e){await db.from("member_guest_holds").delete().eq("id",holdId);throw e;}
   }
   if(body.type==="payg"){
-    if(body.groupResponsibilityAccepted!==true||body.adultSupervisionConfirmed!==true)return NextResponse.json({error:"Please confirm responsibility for your group and the under-18 supervision rule."},{status:400});
+    const {data:ack}=await db.from("booking_acknowledgements").select("group_responsibility,adult_supervision").eq("user_id",user.id).maybeSingle();
+    if(!ack?.group_responsibility||!ack?.adult_supervision)return NextResponse.json({error:"Please confirm the saved booking safety requirements first."},{status:409});
     const startsAt=String(body.startsAt||""); const partySize=Number(body.partySize);
     if(!Number.isInteger(partySize)||partySize<1||partySize>6)return NextResponse.json({error:"Choose between one and six people."},{status:400});
     const {data:holdId,error:he}=await db.rpc("create_payg_hold",{p_user_id:user.id,p_starts_at:startsAt,p_party_size:partySize});
