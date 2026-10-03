@@ -59,16 +59,16 @@ export async function POST(req:NextRequest){
     return NextResponse.json({url:session.url});
   }
   if(body.type==="member_guest"){
-    const startsAt=String(body.startsAt||""); const partySize=Math.max(2,Math.min(5,Number(body.partySize)||2));
+    const startsAt=String(body.startsAt||""); const partySize=Math.max(2,Math.min(6,Number(body.partySize)||2));
     const {data:holdId,error:he}=await db.rpc("create_member_guest_hold",{p_user_id:user.id,p_starts_at:startsAt,p_party_size:partySize});
     if(he)return NextResponse.json({error:he.message},{status:409});
-    try{const session=await stripe().checkout.sessions.create({mode:"payment",customer_email:user.email,line_items:[{price:GUEST_PRICE,quantity:1}],expires_at:Math.floor(Date.now()/1000)+31*60,success_url:`${SITE}/booking-confirmed?kind=guest&session_id={CHECKOUT_SESSION_ID}`,cancel_url:`${SITE}/book?guest=cancelled`,client_reference_id:user.id,metadata:{kind:"member_guest",user_id:user.id,hold_id:holdId}});await db.rpc("attach_member_guest_checkout",{p_hold_id:holdId,p_session_id:session.id});return NextResponse.json({url:session.url});}
+    try{const {data:hold,error:holdError}=await db.from("member_guest_holds").select("guest_count").eq("id",holdId).single();if(holdError||!hold?.guest_count)throw new Error("Guest checkout could not be prepared");const session=await stripe().checkout.sessions.create({mode:"payment",customer_email:user.email,line_items:[{price:GUEST_PRICE,quantity:hold.guest_count}],expires_at:Math.floor(Date.now()/1000)+31*60,success_url:`${SITE}/booking-confirmed?kind=guest&session_id={CHECKOUT_SESSION_ID}`,cancel_url:`${SITE}/book?guest=cancelled`,client_reference_id:user.id,metadata:{kind:"member_guest",user_id:user.id,hold_id:holdId,guest_count:String(hold.guest_count)}});await db.rpc("attach_member_guest_checkout",{p_hold_id:holdId,p_session_id:session.id});return NextResponse.json({url:session.url});}
     catch(e){await db.from("member_guest_holds").delete().eq("id",holdId);throw e;}
   }
   if(body.type==="payg"){
     if(body.groupResponsibilityAccepted!==true||body.adultSupervisionConfirmed!==true)return NextResponse.json({error:"Please confirm responsibility for your group and the under-18 supervision rule."},{status:400});
     const startsAt=String(body.startsAt||""); const partySize=Number(body.partySize);
-    if(!Number.isInteger(partySize)||partySize<1||partySize>5)return NextResponse.json({error:"Choose between one and five people."},{status:400});
+    if(!Number.isInteger(partySize)||partySize<1||partySize>6)return NextResponse.json({error:"Choose between one and six people."},{status:400});
     const {data:holdId,error:he}=await db.rpc("create_payg_hold",{p_user_id:user.id,p_starts_at:startsAt,p_party_size:partySize});
     if(he) return NextResponse.json({error:he.message},{status:409});
     try{
