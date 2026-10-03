@@ -334,3 +334,13 @@ label.check>span a{white-space:normal;overflow-wrap:break-word}
  .booking .timeactions button,.booking .timeactions a{width:100%;min-width:0;padding:10px 6px;font-size:12px;line-height:1.25;text-align:center}
  .booking .timecard.unavailable .timestatus{margin:0}
 }
+
+.booking-info-summary{margin-bottom:18px}
+.booking-info-summary>.bookingintro{margin-bottom:8px}
+.booking-info-toggle{appearance:none;background:transparent;border:0;padding:3px 0;color:var(--cream);font:700 14px inherit;text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+.booking-info-expanded{margin-top:14px}
+.booking-info-expanded .bookingintro{margin-top:0}
+@media(max-width:700px){
+ .booking-info-summary>.bookingintro{font-size:16px;line-height:1.45}
+ .booking-info-expanded .bookingintro{font-size:16px;line-height:1.55}
+}
