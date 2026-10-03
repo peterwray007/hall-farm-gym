@@ -252,3 +252,12 @@ input:focus,select:focus,textarea:focus{border-color:#95ad9a;box-shadow:0 0 0 3p
  .cards article:hover{transform:none}
  .primary,.secondary{min-height:46px}
 }
+
+.admin-page{max-width:1100px}
+.admin-intro{max-width:720px;color:#bfcac2;line-height:1.6;margin-top:-20px;margin-bottom:30px}
+.admin-page>h2:not(:first-of-type){font-size:34px;margin-top:58px;margin-bottom:18px;padding-top:18px;border-top:1px solid var(--line)}
+.admin-page .notice{max-width:100%}
+.admin-page .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+.admin-page .cards article{padding:21px}
+.admin-page button{min-height:42px}
+@media(max-width:760px){.admin-page .cards{grid-template-columns:1fr}.admin-page>h2:not(:first-of-type){font-size:29px;margin-top:44px}}
