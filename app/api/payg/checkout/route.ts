@@ -11,7 +11,7 @@ export async function POST(req:NextRequest){
   const keys=["heart_condition","chest_pain","dizziness","medical_reason"];
   if(keys.some(k=>typeof b.answers?.[k]!=="boolean"))return NextResponse.json({error:"Answer all health questions."},{status:400});
   const party=Number(b.partySize);
-  if(!Number.isInteger(party)||party<1||party>5)return NextResponse.json({error:"Invalid group size."},{status:400});
+  if(!Number.isInteger(party)||party<1||party>6)return NextResponse.json({error:"Invalid group size."},{status:400});
   const {data:id,error}=await db.rpc("create_guest_payg_hold",{p_starts_at:b.startsAt,p_party_size:party,p_full_name:b.name,p_email:b.email,p_phone:b.phone,p_emergency_name:b.emergencyName,p_emergency_phone:b.emergencyPhone,p_health_answers:b.answers});
   if(error)return NextResponse.json({error:error.message},{status:409});
   holdId=id;
