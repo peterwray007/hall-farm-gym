@@ -319,3 +319,6 @@ label.check>span a{white-space:normal;overflow-wrap:break-word}
  label.check{width:100%;align-items:flex-start}
  label.check>span{width:calc(100% - 30px)}
 }
+
+.field-label{display:flex;flex-direction:column;gap:7px;color:#cbd5cd;font-size:13px}
+.field-label input{width:100%;margin:0}
