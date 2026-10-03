@@ -8,7 +8,7 @@ if(!token)return NextResponse.json({error:"Please sign in"},{status:401});
 const uc=userClient(token),{data:{user}}=await uc.auth.getUser(token);
 if(!user)return NextResponse.json({error:"Please sign in"},{status:401});
 const b=await req.json(),attendees=b.attendeeIds;
-if(!Array.isArray(attendees)||attendees.length<1||attendees.length>3||attendees.some(x=>typeof x!=="string"))return NextResponse.json({error:"Choose the named members attending"},{status:400});
+if(!Array.isArray(attendees)||attendees.length<1||attendees.length>4||attendees.some(x=>typeof x!=="string"))return NextResponse.json({error:"Choose the named members attending"},{status:400});
 const {data:id,error}=await uc.rpc("book_bootcamp_with_credit",{p_class_id:b.classId,p_attendee_ids:attendees});
 if(error)return NextResponse.json({error:error.message},{status:409});
 const {data:c}=await adminClient().from("bootcamp_classes").select("title,starts_at").eq("id",b.classId).single();
