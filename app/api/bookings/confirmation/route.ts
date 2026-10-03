@@ -12,7 +12,7 @@ export async function GET(req:NextRequest){
   if(error||!user)return NextResponse.json({error:"Invalid session"},{status:401});
   const u=new URL(req.url),id=u.searchParams.get("id"),sessionId=u.searchParams.get("session_id");
   const db=adminClient();
-  let query=db.from("bookings").select("id,starts_at,party_size,kind,guest_fee_paid,status,bringing_guest").eq("user_id",user.id).eq("status","confirmed");
+  let query=db.from("bookings").select("id,starts_at,party_size,kind,guest_fee_paid,status,bringing_guest,credit_source").eq("user_id",user.id).eq("status","confirmed");
   if(sessionId){
    if(!/^cs_(live|test)_[a-zA-Z0-9]+$/.test(sessionId)||sessionId.length>220)return NextResponse.json({error:"Invalid checkout reference"},{status:400});
    query=query.eq("stripe_checkout_session_id",sessionId);
