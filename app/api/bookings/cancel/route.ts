@@ -13,12 +13,14 @@ export async function POST(req:NextRequest){
   if(ue||!user)return NextResponse.json({error:"Please sign in again."},{status:401});
   const{id}=await req.json();if(!id)return NextResponse.json({error:"Booking required."},{status:400});
   const db=adminClient();
-  const{data:b}=await db.from("bookings").select("id,user_id,kind,status,starts_at,bringing_guest,guest_fee_paid,stripe_payment_intent_id,credit_source").eq("id",id).eq("user_id",user.id).maybeSingle();
+  const{data:b}=await db.from("bookings").select("id,user_id,kind,status,starts_at,created_at,bringing_guest,guest_fee_paid,stripe_payment_intent_id,credit_source").eq("id",id).eq("user_id",user.id).maybeSingle();
   if(!b)return NextResponse.json({error:"Booking not found."},{status:404});
   if(b.status!=="confirmed")return NextResponse.json({error:"This booking is already cancelled or unavailable."},{status:409});
-  const{data:s}=await db.from("gym_settings").select("cancellation_hours").single();
-  const cutoff=(s?.cancellation_hours??12)*3600000;
-  const refundable=new Date(b.starts_at).getTime()>=Date.now()+cutoff;
+  const{data:s}=await db.from("gym_settings").select("cancellation_hours,payg_cancellation_grace_minutes").single();
+  const now=Date.now(),cutoff=(s?.cancellation_hours??12)*3600000;
+  const outsideWindow=new Date(b.starts_at).getTime()>=now+cutoff;
+  const paygGrace=b.kind==="payg"&&new Date(b.starts_at).getTime()>now&&now<=new Date(b.created_at).getTime()+(s?.payg_cancellation_grace_minutes??20)*60000;
+  const refundable=outsideWindow||paygGrace;
   if(b.kind==="member"){
    if(refundable&&b.guest_fee_paid){
     if(!b.stripe_payment_intent_id)return NextResponse.json({error:"We could not find the guest payment for this booking. Please contact WrayFitness before cancelling."},{status:409});
@@ -33,10 +35,10 @@ export async function POST(req:NextRequest){
   if(refundable&&!b.stripe_payment_intent_id)return NextResponse.json({error:"We could not find the PAYG payment for this booking. Please contact WrayFitness before cancelling."},{status:409});
   if(refundable&&b.stripe_payment_intent_id){
    if(!process.env.STRIPE_SECRET_KEY)throw new Error("Stripe is not configured");
-   await stripe().refunds.create({payment_intent:b.stripe_payment_intent_id,metadata:{booking_id:b.id,reason:"customer_cancelled_outside_window"}},{idempotencyKey:`booking-refund-${b.id}`});
+   await stripe().refunds.create({payment_intent:b.stripe_payment_intent_id,metadata:{booking_id:b.id,reason:paygGrace?"customer_cancelled_within_booking_grace":"customer_cancelled_outside_window"}},{idempotencyKey:`booking-refund-${b.id}`});
   }
   const{error:ce}=await db.from("bookings").update({status:"cancelled",cancelled_at:new Date().toISOString()}).eq("id",b.id).eq("status","confirmed");
   if(ce)throw ce;
-  const message=refundable?"Cancelled — your PAYG payment has been refunded.":"Cancelled — this was inside the cancellation window, so no refund is due.";if(user.email){try{await sendEmail(user.email,"Hall Farm Gym booking cancelled",cancellationEmail(b.starts_at,message))}catch(e){console.error("cancellation email",e)}}return NextResponse.json({message});
+  const message=refundable?(paygGrace?"Cancelled — your PAYG payment has been refunded under the 20-minute booking grace period.":"Cancelled — your PAYG payment has been refunded."):"Cancelled — this was inside the cancellation window and outside the 20-minute booking grace period, so no refund is due.";if(user.email){try{await sendEmail(user.email,"Hall Farm Gym booking cancelled",cancellationEmail(b.starts_at,message))}catch(e){console.error("cancellation email",e)}}return NextResponse.json({message});
  }catch(e){return NextResponse.json({error:e instanceof Error?e.message:"Could not cancel booking."},{status:500})}
 }
