@@ -23,7 +23,7 @@ export default function HealthDetails(){
  return <main><section className="membership-page"><p className="eyebrow">MY ACCOUNT</p><h1>Health information</h1><p className="membership-intro">You only need to complete the full gym set-up once. Come back here if anything changes with your health, medication or medical advice that could affect exercise.</p>
  <article className="notice"><strong>Please keep this up to date.</strong><p>If a change means one of these answers becomes Yes, your account may need a quick review before your next session.</p></article>
  {questions.map(([k,q])=><label className="question" key={k}><span>{q}</span><select value={answers[k]===undefined?"":String(answers[k])} onChange={e=>setAnswers(x=>({...x,[k]:e.target.value==="true"}))}><option value="" disabled>Choose…</option><option value="false">No</option><option value="true">Yes</option></select></label>)}
- <label className="check"><input type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)}/> I consent to The Hall Farm Gym using this health information to assess gym safety and eligibility.</label>
+ <label className="check"><input type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)}/><span>I consent to The Hall Farm Gym using this health information to assess gym safety and eligibility.</span></label>
  {msg&&<p className="bookingmessage" role="status">{msg}</p>}
  <div className="actions"><button className="primary" disabled={busy} onClick={save}>{busy?"Saving…":"Save health information"}</button><a className="secondary" href="/account">Back to My Account</a></div>
  </section></main>
