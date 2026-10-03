@@ -322,3 +322,15 @@ label.check>span a{white-space:normal;overflow-wrap:break-word}
 
 .field-label{display:flex;flex-direction:column;gap:7px;color:#cbd5cd;font-size:13px}
 .field-label input{width:100%;margin:0}
+
+/* Mobile booking diary: two compact session cards per row to reduce scrolling. */
+@media(max-width:700px){
+ .booking .timegrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .booking .timecard{min-width:0;padding:12px 10px;border-radius:11px}
+ .booking .timestatus{gap:5px;margin-bottom:10px;align-items:flex-start;flex-direction:column}
+ .booking .timestatus>strong{font-size:24px;line-height:1}
+ .booking .timestatus span{font-size:10px}
+ .booking .timeactions{display:grid;grid-template-columns:1fr;gap:6px}
+ .booking .timeactions button,.booking .timeactions a{width:100%;min-width:0;padding:10px 6px;font-size:12px;line-height:1.25;text-align:center}
+ .booking .timecard.unavailable .timestatus{margin:0}
+}
