@@ -1,8 +1,10 @@
 import {NextRequest,NextResponse} from "next/server";
 import Stripe from "stripe";
 import {adminClient} from "../../../../lib/supabase-server";
+import {allowRequest} from "../../../../lib/rate-limit";
 export const runtime="nodejs";
 export async function POST(req:NextRequest){
+ if(!await allowRequest(req,"guest-payg-checkout",10,600))return NextResponse.json({error:"Too many attempts. Please wait a few minutes and try again."},{status:429});
  const db=adminClient();let holdId:string|null=null;
  try{
   const b=await req.json();
