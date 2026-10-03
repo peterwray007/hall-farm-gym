@@ -311,3 +311,11 @@ input:focus,select:focus,textarea:focus{border-color:#95ad9a;box-shadow:0 0 0 3p
 .shop-qty-label{display:flex;align-items:center;gap:8px;color:#aebbb2}
 .shop-size-row select,.shop-single-qty select{min-width:76px;margin:0}
 .shop-single-qty{border-top:0!important;padding-top:0}
+
+/* Safari/iPhone: keep checkbox copy as one wrapping text column. */
+label.check>span{display:block;flex:1 1 auto;min-width:0}
+label.check>span a{white-space:normal;overflow-wrap:break-word}
+@media(max-width:700px){
+ label.check{width:100%;align-items:flex-start}
+ label.check>span{width:calc(100% - 30px)}
+}
