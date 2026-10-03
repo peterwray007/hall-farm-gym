@@ -37,6 +37,27 @@ export async function POST(req:NextRequest){
     }catch(e){await db.from("membership_checkout_holds").delete().eq("id",capacityHold);throw e}
     return NextResponse.json({url:session.url});
   }
+  if(body.type==="credit_topup"){
+    const credits=Math.floor(Number(body.credits));
+    if(body.acceptTopupTerms!==true||body.immediateServiceRequested!==true)return NextResponse.json({error:"Please accept the extra-credit terms and request immediate access before continuing."},{status:400});
+    if(!Number.isInteger(credits)||credits<1||credits>20)return NextResponse.json({error:"Choose between 1 and 20 extra credits."},{status:400});
+    const {data:entitlement,error:ee}=await uc.rpc("my_booking_entitlement");
+    const ent=entitlement?.[0];
+    if(ee||!ent?.has_active_membership)return NextResponse.json({error:"Extra credits are only available with an active membership."},{status:409});
+    if(Number(ent.total_credits||0)>0)return NextResponse.json({error:"Extra credits are available once you have used your existing credits."},{status:409});
+    const {data:settings,error:se}=await db.from("gym_settings").select("topup_credit_price_pence").single();
+    if(se||!settings?.topup_credit_price_pence)throw new Error("Extra-credit pricing is not configured");
+    const unitAmount=Number(settings.topup_credit_price_pence);
+    const session=await stripe().checkout.sessions.create({
+      mode:"payment",customer_email:user.email,
+      line_items:[{price_data:{currency:"gbp",unit_amount:unitAmount,product_data:{name:"Hall Farm Gym extra member credit"}},quantity:credits}],
+      success_url:`${SITE}/account?topup=success`,cancel_url:`${SITE}/account?topup=cancelled`,
+      client_reference_id:user.id,
+      metadata:{kind:"credit_topup",user_id:user.id,credits:String(credits),unit_amount_pence:String(unitAmount),immediate_service_requested:"true"},
+      payment_intent_data:{metadata:{kind:"credit_topup",user_id:user.id,credits:String(credits)}}
+    });
+    return NextResponse.json({url:session.url});
+  }
   if(body.type==="member_guest"){
     const startsAt=String(body.startsAt||""); const partySize=Math.max(2,Math.min(5,Number(body.partySize)||2));
     const {data:holdId,error:he}=await db.rpc("create_member_guest_hold",{p_user_id:user.id,p_starts_at:startsAt,p_party_size:partySize});
