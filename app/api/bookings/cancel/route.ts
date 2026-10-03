@@ -13,7 +13,7 @@ export async function POST(req:NextRequest){
   if(ue||!user)return NextResponse.json({error:"Please sign in again."},{status:401});
   const{id}=await req.json();if(!id)return NextResponse.json({error:"Booking required."},{status:400});
   const db=adminClient();
-  const{data:b}=await db.from("bookings").select("id,user_id,kind,status,starts_at,bringing_guest,guest_fee_paid,stripe_payment_intent_id").eq("id",id).eq("user_id",user.id).maybeSingle();
+  const{data:b}=await db.from("bookings").select("id,user_id,kind,status,starts_at,bringing_guest,guest_fee_paid,stripe_payment_intent_id,credit_source").eq("id",id).eq("user_id",user.id).maybeSingle();
   if(!b)return NextResponse.json({error:"Booking not found."},{status:404});
   if(b.status!=="confirmed")return NextResponse.json({error:"This booking is already cancelled or unavailable."},{status:409});
   const{data:s}=await db.from("gym_settings").select("cancellation_hours").single();
@@ -27,7 +27,7 @@ export async function POST(req:NextRequest){
    }
    const{error}=await uc.rpc("cancel_my_booking",{p_booking_id:id});
    if(error)return NextResponse.json({error:error.message},{status:400});
-   const message=refundable?(b.guest_fee_paid?"Cancelled — your member session has been returned and the £5 guest fee has been refunded.":"Cancelled — your member session has been returned to your allowance."):"Cancelled — this was inside the cancellation window, so the member session and any guest fee are not returned.";if(user.email){try{await sendEmail(user.email,"Hall Farm Gym booking cancelled",cancellationEmail(b.starts_at,message))}catch(e){console.error("cancellation email",e)}}return NextResponse.json({message});
+   const creditReturn=b.credit_source==="topup"?"your purchased extra credit has been returned":b.credit_source==="gift"?"your gifted credit has been returned":"your membership credit has been returned";const message=refundable?(b.guest_fee_paid?`Cancelled — ${creditReturn} and the £5 guest fee has been refunded.`:`Cancelled — ${creditReturn}.`):"Cancelled — this was inside the cancellation window, so the member session and any guest fee are not returned.";if(user.email){try{await sendEmail(user.email,"Hall Farm Gym booking cancelled",cancellationEmail(b.starts_at,message))}catch(e){console.error("cancellation email",e)}}return NextResponse.json({message});
   }
   if(b.kind!=="payg")return NextResponse.json({error:"This booking cannot be cancelled here."},{status:400});
   if(refundable&&!b.stripe_payment_intent_id)return NextResponse.json({error:"We could not find the PAYG payment for this booking. Please contact WrayFitness before cancelling."},{status:409});
