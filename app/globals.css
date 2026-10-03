@@ -261,3 +261,10 @@ input:focus,select:focus,textarea:focus{border-color:#95ad9a;box-shadow:0 0 0 3p
 .admin-page .cards article{padding:21px}
 .admin-page button{min-height:42px}
 @media(max-width:760px){.admin-page .cards{grid-template-columns:1fr}.admin-page>h2:not(:first-of-type){font-size:29px;margin-top:44px}}
+
+.siteheader-inner>nav a.active{color:#f4f0e7}
+.siteheader-inner>nav a.active:after{right:0}
+@media(max-width:700px){
+ .siteheader .mobile-app-nav a.active{color:#fff;background:#2a3c30;border-radius:9px}
+ .siteheader .mobile-app-nav a.active svg{stroke:#bcd0c0}
+}
