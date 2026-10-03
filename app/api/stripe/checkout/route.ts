@@ -15,6 +15,7 @@ export async function POST(req:NextRequest){
   if(ue||!user) return NextResponse.json({error:"Please sign in again."},{status:401});
   const body=await req.json(); const db=adminClient();
   if(body.type==="membership"){
+    if(body.acceptMembershipTerms!==true||body.immediateServiceRequested!==true||body.termsVersion!=="2026-10-03")return NextResponse.json({error:"Please accept the current membership terms and request immediate service before continuing."},{status:400});
     const {data:cleared,error:ce}=await db.rpc("member_is_cleared",{p_uid:user.id});if(ce||cleared!==true)return NextResponse.json({error:"Please complete your health form, online safety acknowledgement and gym terms before joining."},{status:409});
     const {data:existing}=await db.from("memberships").select("id,status").eq("owner_id",user.id).in("status",["active","past_due","paused"]).limit(1).maybeSingle();if(existing)return NextResponse.json({error:"You already have a membership. Manage it from My Account."},{status:409});
     const code=String(body.plan||"").toLowerCase();
@@ -22,12 +23,14 @@ export async function POST(req:NextRequest){
     if(error||!plan?.stripe_price_id) return NextResponse.json({error:"Membership plan unavailable."},{status:400});
     const {data:capacityHold,error:capacityError}=await db.rpc("claim_membership_checkout",{p_user_id:user.id});
     if(capacityError||!capacityHold)return NextResponse.json({error:capacityError?.message||"No memberships currently available. Please contact WrayFitness."},{status:409});
+    const acceptedAt=new Date().toISOString();
+    const {error:consentError}=await db.from("membership_checkout_holds").update({terms_version:"2026-10-03",terms_accepted_at:acceptedAt,immediate_service_requested_at:acceptedAt}).eq("id",capacityHold).eq("user_id",user.id);if(consentError){await db.from("membership_checkout_holds").delete().eq("id",capacityHold);throw consentError}
     let session:Stripe.Checkout.Session;
     try{session=await stripe().checkout.sessions.create({
       mode:"subscription",customer_email:user.email,line_items:[{price:plan.stripe_price_id,quantity:1}],
       success_url:`${SITE}/account?checkout=success`,cancel_url:`${SITE}/join?plan=${code}&checkout=cancelled`,
-      client_reference_id:user.id,expires_at:Math.floor(Date.now()/1000)+30*60,metadata:{kind:"membership",user_id:user.id,plan_code:code,capacity_hold_id:capacityHold},
-      subscription_data:{metadata:{user_id:user.id,plan_code:code}}
+      client_reference_id:user.id,expires_at:Math.floor(Date.now()/1000)+30*60,metadata:{kind:"membership",user_id:user.id,plan_code:code,capacity_hold_id:capacityHold,terms_version:"2026-10-03",immediate_service_requested:"true"},
+      subscription_data:{metadata:{user_id:user.id,plan_code:code,terms_version:"2026-10-03"}}
     });
     const {error:attach}=await db.from("membership_checkout_holds").update({stripe_checkout_session_id:session.id}).eq("id",capacityHold);
     if(attach)throw attach;
