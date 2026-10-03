@@ -14,7 +14,7 @@ async function syncSubscription(sub:any,resetCredits=false){
  const {data:plan}=await db.from("membership_plans").select("*").eq("code",code).single(); if(!plan)return;
  const firstItem=sub.items?.data?.[0];const periodStart=firstItem?.current_period_start??sub.current_period_start;const periodEnd=firstItem?.current_period_end??sub.current_period_end;
  const values:any={plan_id:plan.id,owner_id:userId,stripe_customer_id:typeof sub.customer==="string"?sub.customer:sub.customer?.id,
- stripe_subscription_id:sub.id,status:membershipStatus(sub.status),
+ stripe_subscription_id:sub.id,status:membershipStatus(sub.status),cancel_at_period_end:sub.cancel_at_period_end===true,
  period_start:periodStart?new Date(periodStart*1000).toISOString():null,
  period_end:periodEnd?new Date(periodEnd*1000).toISOString():null};
  const {data:existing}=await db.from("memberships").select("id").eq("stripe_subscription_id",sub.id).maybeSingle();
