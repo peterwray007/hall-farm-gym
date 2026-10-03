@@ -1,5 +1,5 @@
 "use client";
-import {useEffect,useMemo,useState} from "react";
+import {memo,useEffect,useMemo,useState} from "react";
 import {supabase} from "../../lib/supabase";
 
 type Slot={starts_at:string;ends_at:string;is_available:boolean};
@@ -17,7 +17,7 @@ const londonDay=(v:string)=>{
 const time=(v:string)=>timeFormatter.format(new Date(v));
 const dayLabel=(v:string)=>dayLabelFormatter.format(new Date(v));
 
-export default function AdminBulkCalendar(){
+const AdminBulkCalendar=memo(function AdminBulkCalendar(){
  const[slots,setSlots]=useState<Slot[]>([]),[loading,setLoading]=useState(true),[selectedDay,setSelectedDay]=useState(""),[selected,setSelected]=useState<string[]>([]),[purpose,setPurpose]=useState("pt"),[note,setNote]=useState("Personal training"),[busy,setBusy]=useState(false),[notice,setNotice]=useState("");
 
  async function refresh(){
@@ -102,4 +102,6 @@ export default function AdminBulkCalendar(){
   {selected.length>0&&<details className="admin-bulk-review"><summary>Review selected dates and times</summary><p>{selected.map(t=>dayLabel(t)+" at "+time(t)).join(" · ")}</p></details>}
   {notice&&<p className="admin-bulk-status" role="status">{notice}</p>}
  </div>;
-}
+});
+
+export default AdminBulkCalendar;
