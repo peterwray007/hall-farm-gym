@@ -1,2 +1,5 @@
-import type {MetadataRoute} from "next";
-export default function sitemap():MetadataRoute.Sitemap{const b="https://www.hallfarmgym.com";return["","/book","/membership","/join","/bootcamps","/holiday-lets","/contact","/privacy-policy","/terms-of-service","/induction"].map((p,i)=>({url:b+p,lastModified:new Date(),changeFrequency:i===0?"weekly":"monthly",priority:i===0?1:.8}))}
+import type { MetadataRoute } from "next";
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  return [{ url: "https://www.hallfarmgym.com/shop" }];
+}
